@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analyseur Premium v3 — Marchés Alternatifs</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0f1c2e;--card:#172135;--card2:#1e2d42;--border:#263d58;--border2:#2f4a6a;
+  --text:#dce6f0;--muted:#7a93b0;--dim:#4a6280;--dim2:#2a3d55;
+  --gold:#f59e0b;--gold-dim:#7c4f05;--gold-bg:rgba(245,158,11,0.08);--gold-border:rgba(245,158,11,0.25);
+  --green:#10b981;--green-bg:rgba(16,185,129,0.08);--green-border:rgba(16,185,129,0.3);
+  --red:#ef4444;--red-bg:rgba(239,68,68,0.08);--red-border:rgba(239,68,68,0.3);
+  --amber:#f59e0b;--amber-bg:rgba(245,158,11,0.08);--amber-border:rgba(245,158,11,0.3);
+  --blue:#3b82f6;--blue-bg:rgba(59,130,246,0.08);--blue-border:rgba(59,130,246,0.3);
+  --purple:#a78bfa;--purple-bg:rgba(167,139,250,0.08);--purple-border:rgba(167,139,250,0.3);
+  --cyan:#22d3ee;--cyan-bg:rgba(34,211,238,0.08);--cyan-border:rgba(34,211,238,0.3);
+  --pink:#f472b6;--pink-bg:rgba(244,114,182,0.08);--pink-border:rgba(244,114,182,0.3);
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:0 0 60px;}
+.container{max-width:520px;margin:0 auto;padding:0 14px;}
+header{background:linear-gradient(160deg,#0e1726 0%,#0a1220 60%,#070d1a 100%);border-bottom:1px solid var(--border);padding:24px 14px 20px;text-align:center;margin-bottom:12px;position:relative;overflow:hidden;}
+header::before{content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:280px;height:140px;background:radial-gradient(ellipse,rgba(245,158,11,0.12) 0%,transparent 70%);pointer-events:none;}
+.logo-wrap{display:inline-flex;align-items:center;gap:10px;margin-bottom:8px;}
+.logo-icon{width:40px;height:40px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 20px rgba(245,158,11,0.4);}
+header h1{font-family:'Bebas Neue',sans-serif;font-size:28px;font-weight:400;color:#fff;letter-spacing:0.04em;line-height:1;}
+.badge-v3{display:inline-block;background:var(--gold-bg);border:1px solid var(--gold-border);color:var(--gold);font-size:9px;font-weight:700;padding:3px 10px;border-radius:99px;letter-spacing:0.1em;margin-bottom:6px;}
+header p{font-size:10px;color:var(--muted);letter-spacing:0.05em;}
+.team-inputs{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-bottom:10px;}
+.team-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center;transition:border-color 0.2s;}
+.team-box:focus-within{border-color:var(--gold-border);}
+.team-box label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;display:block;margin-bottom:5px;}
+.team-box input[type=text]{background:transparent;border:none;color:var(--text);font-size:14px;font-weight:700;text-align:center;width:100%;outline:none;}
+.team-box input[type=text]::placeholder{color:var(--dim);font-weight:400;font-size:12px;}
+.vs-badge{font-size:11px;font-weight:700;color:var(--muted);text-align:center;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px;}
+.card-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.input-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;}
+.input-row2{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.input-group{display:flex;flex-direction:column;gap:4px;}
+.input-group label{font-size:10px;color:var(--muted);}
+.input-group input[type=number]{background:var(--card2);border:1px solid var(--border2);border-radius:9px;color:var(--text);font-size:18px;font-weight:700;padding:9px 10px;width:100%;outline:none;transition:border-color 0.2s;-moz-appearance:textfield;text-align:center;}
+.input-group input[type=number]::-webkit-outer-spin-button,.input-group input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
+.input-group input[type=number]:focus{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold-bg);}
+.input-group input[type=number]::placeholder{color:var(--dim);font-size:12px;font-weight:400;}
+.input-group .hint{font-size:9px;color:var(--dim);margin-top:2px;}
+.sep{border-top:1px solid var(--border);padding-top:12px;margin-top:12px;}
+.seuil-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:8px;}
+.seuil-btn{background:var(--card2);border:1px solid var(--border2);border-radius:7px;color:var(--muted);font-size:11px;font-weight:700;padding:6px 2px;cursor:pointer;text-align:center;transition:all 0.15s;}
+.seuil-btn.active{border-color:var(--gold);background:var(--gold-bg);color:var(--gold);}
+.alt-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.alt-label-row{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;padding:10px 0 6px;border-top:1px solid var(--border);margin-top:4px;}
+.analyze-btn{width:100%;background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;border:none;border-radius:12px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.08em;padding:14px;cursor:pointer;margin-bottom:8px;transition:all 0.2s;box-shadow:0 4px 20px rgba(245,158,11,0.3);}
+.analyze-btn:active{transform:scale(0.98);}
+.reset-btn{width:100%;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--muted);font-size:12px;padding:9px;cursor:pointer;margin-bottom:20px;}
+.results{display:none;}
+.section-hdr{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.metrics3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:8px;}
+.metrics2{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px;}
+.metric{background:var(--card2);border-radius:9px;padding:10px 11px;border:1px solid var(--border);}
+.metric .ml{font-size:10px;color:var(--muted);margin-bottom:4px;}
+.metric .mv{font-size:18px;font-weight:800;color:var(--text);}
+.metric .mv.sm{font-size:14px;}
+.bar-row{margin-bottom:7px;}
+.bar-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:3px;}
+.bar-track{background:var(--dim2);border-radius:99px;height:5px;overflow:hidden;}
+.bar-fill{height:5px;border-radius:99px;transition:width 0.6s ease;}
+.verdict{border-radius:14px;padding:14px;margin-bottom:8px;border:1px solid;}
+.verdict .vl{font-size:9px;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:5px;}
+.verdict .vm{font-size:19px;font-weight:800;margin-bottom:6px;line-height:1.2;}
+.verdict .vd{font-size:12px;color:var(--muted);line-height:1.7;}
+.v-home{background:var(--green-bg);border-color:var(--green-border);}
+.v-home .vm{color:var(--green);}
+.v-draw{background:var(--amber-bg);border-color:var(--amber-border);}
+.v-draw .vm{color:var(--amber);}
+.v-away{background:var(--blue-bg);border-color:var(--blue-border);}
+.v-away .vm{color:var(--blue);}
+.v-danger{background:var(--red-bg);border-color:var(--red-border);}
+.v-danger .vm{color:var(--red);}
+.v-neutral{background:var(--card2);border-color:var(--border);}
+.v-neutral .vm{color:var(--muted);}
+.v-corner{background:var(--purple-bg);border-color:var(--purple-border);}
+.v-corner .vm{color:var(--purple);}
+.v-cyan{background:var(--cyan-bg);border-color:var(--cyan-border);}
+.v-cyan .vm{color:var(--cyan);}
+.gauge-wrap{text-align:center;padding:10px 0 4px;}
+.gauge-svg{display:block;margin:0 auto;filter:drop-shadow(0 0 12px rgba(245,158,11,0.3));}
+#gauge_txt{font-family:'Bebas Neue',sans-serif;}
+.gauge-label{font-size:13px;font-weight:700;color:var(--text);margin-top:5px;}
+.gauge-sub{font-size:10px;color:var(--muted);margin-top:6px;line-height:1.6;}
+.seuil-result{background:var(--card2);border-radius:9px;padding:11px;margin-top:10px;border:1px solid var(--border);}
+.seuil-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);}
+.seuil-row:last-child{border-bottom:none;}
+.seuil-row .sr-label{font-size:11px;color:var(--muted);}
+.seuil-row .sr-val{font-size:13px;font-weight:700;}
+.tag-green{background:var(--green-bg);color:var(--green);}
+.tag-red{background:var(--red-bg);color:var(--red);}
+.tag-amber{background:var(--amber-bg);color:var(--amber);}
+.tag-gray{background:var(--card2);color:var(--muted);}
+.tag-blue{background:var(--blue-bg);color:var(--blue);}
+.tag-purple{background:var(--purple-bg);color:var(--purple);}
+.tag-cyan{background:var(--cyan-bg);color:var(--cyan);}
+.tag-pink{background:var(--pink-bg);color:var(--pink);}
+.markets-grid{display:grid;gap:6px;}
+.market-item{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.market-indicators-grid{display:grid;gap:8px;}
+.quick-grid{display:grid;gap:4px;}
+.qrow{display:grid;grid-template-columns:110px 1fr 1fr;gap:6px;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);}
+.qlabel{font-size:11px;font-weight:700;color:var(--text);}
+.qrow input[type=number]{background:var(--card2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:16px;font-weight:700;padding:8px 6px;width:100%;outline:none;-moz-appearance:textfield;text-align:center;transition:border-color 0.2s;}
+.qrow input[type=number]::-webkit-outer-spin-button,.qrow input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
+.qrow input[type=number]:focus{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold-bg);}
+.qrow input[type=number]::placeholder{color:var(--dim);font-size:11px;font-weight:400;}
+.qseuil-row{display:flex;align-items:center;gap:6px;padding:4px 0 8px;border-bottom:1px solid var(--border);}
+.qseuil-row span{font-size:10px;color:var(--muted);white-space:nowrap;}
+.pred-card{border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px;border:1px solid;}
+.pred-card.green{background:var(--green-bg);border-color:var(--green-border);}
+.pred-card.amber{background:var(--amber-bg);border-color:var(--amber-border);}
+.pred-card.red{background:var(--red-bg);border-color:var(--red-border);}
+.pred-icon{font-size:20px;flex-shrink:0;}
+.pred-body{flex:1;}
+.pred-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.pred-detail{font-size:11px;color:var(--muted);line-height:1.4;}
+.pred-badge{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap;padding:3px 8px;border-radius:99px;}
+.pred-badge.green{background:var(--green);color:#000;}
+.pred-badge.amber{background:var(--amber);color:#000;}
+.pred-badge.red{background:var(--red);color:#fff;}
+.mi-card{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:11px 13px;display:flex;align-items:center;gap:12px;}
+.mi-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.mi-body{flex:1;}
+.mi-name{font-size:12.5px;font-weight:700;color:var(--text);margin-bottom:1px;}
+.mi-detail{font-size:10.5px;color:var(--muted);line-height:1.4;}
+.mi-pct{font-size:17px;font-weight:800;text-align:right;white-space:nowrap;}
+.mi-tag{font-size:9px;font-weight:700;text-align:right;white-space:nowrap;text-transform:uppercase;letter-spacing:0.04em;}
+.market-item .mi-label{font-size:12px;color:var(--text);flex:1;line-height:1.4;}
+.market-item .mi-label small{display:block;font-size:10px;color:var(--muted);margin-top:2px;}
+.market-item .mi-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;}
+.market-item .mi-val{font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;white-space:nowrap;}
+.market-item .mi-proba{font-size:9px;color:var(--muted);}
+.market-item .mi-value-badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:99px;}
+.score-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.score-chip{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 4px;text-align:center;font-size:13px;font-weight:700;color:var(--text);}
+.score-chip small{display:block;font-size:9px;color:var(--muted);margin-top:2px;font-weight:400;}
+.score-chip.top1{border-color:var(--green);color:var(--green);background:var(--green-bg);}
+.score-chip.top2{border-color:var(--blue);color:var(--blue);background:var(--blue-bg);}
+.score-chip.top3{border-color:var(--gold);color:var(--gold);background:var(--gold-bg);}
+.timing-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.timing-item{background:var(--card2);border-radius:9px;padding:10px 11px;border:1px solid var(--border);}
+.timing-item .tl{font-size:10px;color:var(--muted);margin-bottom:3px;}
+.timing-item .tv{font-size:13px;font-weight:700;color:var(--text);line-height:1.3;}
+.alt-market-block{background:var(--card2);border-radius:10px;margin-bottom:7px;overflow:hidden;border:1px solid var(--border);}
+.amb-header{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--border);}
+.amb-icon{font-size:14px;margin-right:6px;}
+.amb-title{font-size:12px;font-weight:700;color:var(--text);flex:1;}
+.amb-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:99px;}
+.amb-body{padding:10px 12px;}
+.amb-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border);}
+.amb-row:last-child{border-bottom:none;}
+.amb-row-label{font-size:11px;color:var(--muted);}
+.amb-row-val{font-size:12px;font-weight:700;}
+.amb-bar-track{background:var(--dim2);border-radius:99px;height:4px;overflow:hidden;margin-top:6px;}
+.amb-bar-fill{height:4px;border-radius:99px;}
+.outsider-box{background:linear-gradient(135deg,var(--gold-bg),var(--purple-bg));border:1px solid var(--gold-border);border-radius:14px;padding:14px;margin-bottom:8px;}
+.outsider-box .ob-label{font-size:9px;color:var(--gold);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:5px;}
+.outsider-box .ob-main{font-size:17px;font-weight:800;color:var(--gold);margin-bottom:6px;}
+.outsider-box .ob-detail{font-size:12px;color:var(--muted);line-height:1.6;}
+.corner-details{display:grid;gap:7px;margin-top:10px;}
+.corner-row{background:var(--card2);border-radius:10px;padding:11px 13px;border:1px solid var(--border);}
+.corner-row .cr-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+.corner-row .cr-label{font-size:12px;color:var(--text);}
+.corner-row .cr-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;}
+.corner-row .cr-bar-track{background:var(--dim2);border-radius:99px;height:5px;overflow:hidden;}
+.corner-row .cr-bar-fill{height:5px;border-radius:99px;background:var(--purple);}
+.corner-row .cr-sub{font-size:10px;color:var(--muted);margin-top:5px;}
+.signal-zone{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px;}
+.sz-item{background:var(--card2);border-radius:9px;padding:9px 11px;border:1px solid var(--border);}
+.sz-item .sz-label{font-size:10px;color:var(--muted);margin-bottom:3px;}
+.sz-item .sz-val{font-size:15px;font-weight:800;}
+.sz-item .sz-sub{font-size:9px;color:var(--muted);margin-top:2px;}
+.premium-insight{background:linear-gradient(135deg,var(--purple-bg),var(--card2));border:1px solid var(--purple-border);border-radius:14px;padding:14px;margin-bottom:8px;}
+.pi-label{font-size:9px;color:var(--purple);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;display:flex;align-items:center;gap:5px;}
+.pi-item{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);}
+.pi-item:last-child{border-bottom:none;}
+.pi-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.pi-text{font-size:12px;color:var(--muted);line-height:1.5;}
+.pi-text strong{color:var(--text);}
+.strategy-card{background:var(--card2);border-radius:14px;padding:14px;margin-bottom:8px;border:1px solid var(--border);}
+.sc-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.sc-num{width:22px;height:22px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;}
+.sc-title{font-size:13px;font-weight:700;color:var(--text);}
+.sc-body{font-size:12px;color:var(--muted);line-height:1.6;}
+.sc-mises{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;}
+.sc-mise{background:var(--card);border-radius:8px;padding:8px 10px;text-align:center;border:1px solid var(--border);}
+.sc-mise .sm-label{font-size:10px;color:var(--muted);margin-bottom:2px;}
+.sc-mise .sm-val{font-size:13px;font-weight:700;}
+.conf-rules{display:flex;flex-direction:column;gap:6px;}
+.cr-dot-row{display:flex;align-items:center;gap:8px;}
+.cr-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+#auto_card input[type=text]{background:var(--card2);border:1px solid var(--border2);border-radius:9px;color:var(--text);font-size:14px;padding:10px 12px;outline:none;width:100%;box-sizing:border-box;margin-bottom:8px;}
+#auto_card input[type=text]:focus{border-color:var(--gold);}
+#auto_card select{background:var(--card2);border:1px solid var(--border2);border-radius:9px;color:var(--text);font-size:13px;padding:9px 10px;outline:none;}
+#search_status{font-size:11px;color:var(--muted);text-align:center;padding:4px 0;}
+footer{text-align:center;font-size:10px;color:var(--dim);margin-top:24px;}
+.collapsible-toggle{background:none;border:none;color:var(--muted);font-size:10px;cursor:pointer;padding:0;margin-top:8px;text-decoration:underline;}
+.collapsible-content{display:none;}
+.collapsible-content.open{display:block;}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <div class="logo-wrap">
+    <div class="logo-icon">⚡</div>
+    <h1>Analyseur Premium</h1>
+  </div>
+  <div class="badge-v3">VERSION 3 — MARCHÉS ALTERNATIFS COMPLETS</div>
+  <p style="margin-top:4px;">Hors connexion · Cotes sans marge · Marchés profonds · Prédiction outsider</p>
+</header>
+
+<!-- RECHERCHE AUTO -->
+<div class="card" id="auto_card">
+  <div class="card-title">🔍 Remplissage automatique des cotes</div>
+  <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Cherche un match en direct ou à venir — les cotes se remplissent automatiquement.</div>
+  <input type="text" id="search_query" placeholder="Ex: PSG, Real Madrid, Lyon..." style="width:100%;background:var(--card2);border:0.5px solid var(--border2);border-radius:9px;color:var(--text);font-size:14px;padding:10px 12px;outline:none;box-sizing:border-box;margin-bottom:8px;">
+  <div style="display:flex;gap:8px;margin-bottom:8px;">
+    <select id="search_sport" style="flex:1;background:var(--card2);border:0.5px solid var(--border2);border-radius:9px;color:var(--text);font-size:13px;padding:9px 10px;outline:none;">
+      <option value="soccer_france_ligue_one">Ligue 1 (France)</option>
+      <option value="soccer_epl">Premier League</option>
+      <option value="soccer_spain_la_liga">La Liga</option>
+      <option value="soccer_italy_serie_a">Serie A</option>
+      <option value="soccer_germany_bundesliga">Bundesliga</option>
+      <option value="soccer_uefa_champs_league">Champions League</option>
+      <option value="soccer_africa_cup_of_nations">CAN</option>
+      <option value="soccer_fifa_world_cup">Coupe du Monde</option>
+    </select>
+    <button onclick="searchMatches()" style="background:#1c2128;color:#fff;border:none;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;">Chercher</button>
+  </div>
+  <div id="search_results" style="display:grid;gap:6px;"></div>
+  <div id="search_status" style="font-size:11px;color:var(--muted);text-align:center;padding:4px 0;"></div>
+</div>
+
+<!-- ÉQUIPES -->
+<div class="team-inputs">
+  <div class="team-box">
+    <label>Domicile</label>
+    <input type="text" id="team1" placeholder="Ex: Lyon" oninput="liveCalc()">
+  </div>
+  <div class="vs-badge">VS</div>
+  <div class="team-box">
+    <label>Extérieur</label>
+    <input type="text" id="team2" placeholder="Ex: Monaco" oninput="liveCalc()">
+  </div>
+</div>
+
+<!-- 1X2 -->
+<div class="card">
+  <div class="card-title">🏆 Résultat 1X2</div>
+  <div class="input-row3">
+    <div class="input-group"><label id="lbl1">Dom.</label><input type="number" id="c1" step="0.01" min="1.01" placeholder="1.90" oninput="liveCalc()" inputmode="decimal"></div>
+    <div class="input-group"><label>Nul</label><input type="number" id="cx" step="0.01" min="1.01" placeholder="3.20" oninput="liveCalc()" inputmode="decimal"></div>
+    <div class="input-group"><label id="lbl2">Ext.</label><input type="number" id="c2" step="0.01" min="1.01" placeholder="3.80" oninput="liveCalc()" inputmode="decimal"></div>
+  </div>
+</div>
+
+<!-- SAISIE RAPIDE -->
+<div class="card">
+  <div class="card-title">⚡ Saisie rapide — tous les marchés</div>
+  <div class="quick-grid">
+
+    <div class="qrow"><div class="qlabel">⚽ O/U 2.5</div>
+      <input type="number" id="over" step="0.01" min="1.01" placeholder="Over" oninput="liveCalc()" inputmode="decimal">
+      <input type="number" id="under" step="0.01" min="1.01" placeholder="Under" oninput="liveCalc()" inputmode="decimal">
+    </div>
+
+    <div class="qrow"><div class="qlabel">🎯 BTTS</div>
+      <input type="number" id="btts_oui" step="0.01" min="1.01" placeholder="Oui" oninput="liveCalc()" inputmode="decimal">
+      <input type="number" id="btts_non" step="0.01" min="1.01" placeholder="Non" oninput="liveCalc()" inputmode="decimal">
+    </div>
+
+    <div class="qrow"><div class="qlabel">📐 Corners</div>
+      <input type="number" id="c_over" step="0.01" min="1.01" placeholder="Over" oninput="liveCalc()" inputmode="decimal">
+      <input type="number" id="c_under" step="0.01" min="1.01" placeholder="Under" oninput="liveCalc()" inputmode="decimal">
+    </div>
+    <div class="qseuil-row"><span>Seuil :</span>
+      <div class="seuil-grid" id="seuils_btns" style="flex:1;">
+        <div class="seuil-btn active" onclick="setSeuil(8.5,this)">8.5</div>
+        <div class="seuil-btn" onclick="setSeuil(9.5,this)">9.5</div>
+        <div class="seuil-btn" onclick="setSeuil(10.5,this)">10.5</div>
+        <div class="seuil-btn" onclick="setSeuil(7.5,this)">7.5</div>
+        <div class="seuil-btn" onclick="setSeuil(11.5,this)">11.5</div>
+        <div class="seuil-btn" onclick="setSeuil(6.5,this)">6.5</div>
+      </div>
+    </div>
+
+    <div class="qrow"><div class="qlabel">🟨 Cartons</div>
+      <input type="number" id="cj_over" step="0.01" min="1.01" placeholder="Over" oninput="liveCalc()" inputmode="decimal">
+      <input type="number" id="cj_under" step="0.01" min="1.01" placeholder="Under" oninput="liveCalc()" inputmode="decimal">
+    </div>
+    <div class="qseuil-row"><span>Seuil :</span>
+      <div class="seuil-grid" id="seuils_cj_btns" style="flex:1;">
+        <div class="seuil-btn active" onclick="setSeuilCJ(3.5,this)">3.5</div>
+        <div class="seuil-btn" onclick="setSeuilCJ(4.5,this)">4.5</div>
+        <div class="seuil-btn" onclick="setSeuilCJ(2.5,this)">2.5</div>
+        <div class="seuil-btn" onclick="setSeuilCJ(5.5,this)">5.5</div>
+        <div class="seuil-btn" onclick="setSeuilCJ(1.5,this)">1.5</div>
+        <div class="seuil-btn" onclick="setSeuilCJ(6.5,this)">6.5</div>
+      </div>
+    </div>
+
+    <div class="qrow"><div class="qlabel">🔴 Fautes</div>
+      <input type="number" id="fa_over" step="0.01" min="1.01" placeholder="Over" oninput="liveCalc()" inputmode="decimal">
+      <input type="number" id="fa_under" step="0.01" min="1.01" placeholder="Under" oninput="liveCalc()" inputmode="decimal">
+    </div>
+    <div class="qseuil-row"><span>Seuil :</span>
+      <div class="seuil-grid" id="seuils_fa_btns" style="flex:1;">
+        <div class="seuil-btn active" onclick="setSeuilFA(21.5,this)">21.5</div>
+        <div class="seuil-btn" onclick="setSeuilFA(23.5,this)">23.5</div>
+        <div class="seuil-btn" onclick="setSeuilFA(19.5,this)">19.5</div>
+        <div class="seuil-btn" onclick="setSeuilFA(25.5,this)">25.5</div>
+        <div class="seuil-btn" onclick="setSeuilFA(17.5,this)">17.5</div>
+        <div class="seuil-btn" onclick="setSeuilFA(15.5,this)">15.5</div>
+      </div>
+    </div>
+
+    <div class="qrow"><div class="qlabel">🎯 Tirs cadrés</div>
+      <input type="number" id="tc_over" step="0.01" min="1.01" placeholder="Over" oninput="liveCalc()" inputmode="decimal">
+      <input type="number" id="tc_under" step="0.01" min="1.01" placeholder="Under" oninput="liveCalc()" inputmode="decimal">
+    </div>
+    <div class="qseuil-row"><span>Seuil :</span>
+      <div class="seuil-grid" id="seuils_tc_btns" style="flex:1;">
+        <div class="seuil-btn active" onclick="setSeuilTC(5.5,this)">5.5</div>
+        <div class="seuil-btn" onclick="setSeuilTC(4.5,this)">4.5</div>
+        <div class="seuil-btn" onclick="setSeuilTC(6.5,this)">6.5</div>
+        <div class="seuil-btn" onclick="setSeuilTC(7.5,this)">7.5</div>
+        <div class="seuil-btn" onclick="setSeuilTC(3.5,this)">3.5</div>
+        <div class="seuil-btn" onclick="setSeuilTC(8.5,this)">8.5</div>
+      </div>
+    </div>
+
+    <div class="qrow"><div class="qlabel">💨 Tirs totaux</div>
+      <input type="number" id="tt_over" step="0.01" min="1.01" placeholder="Over" oninput="liveCalc()" inputmode="decimal">
+      <input type="number" id="tt_under" step="0.01" min="1.01" placeholder="Under" oninput="liveCalc()" inputmode="decimal">
+    </div>
+    <div class="qseuil-row"><span>Seuil :</span>
+      <div class="seuil-grid" id="seuils_tt_btns" style="flex:1;">
+        <div class="seuil-btn active" onclick="setSeuilTT(22.5,this)">22.5</div>
+        <div class="seuil-btn" onclick="setSeuilTT(20.5,this)">20.5</div>
+        <div class="seuil-btn" onclick="setSeuilTT(24.5,this)">24.5</div>
+        <div class="seuil-btn" onclick="setSeuilTT(18.5,this)">18.5</div>
+        <div class="seuil-btn" onclick="setSeuilTT(26.5,this)">26.5</div>
+        <div class="seuil-btn" onclick="setSeuilTT(16.5,this)">16.5</div>
+      </div>
+    </div>
+
+    <div class="qrow"><div class="qlabel">⚠️ Hors-jeu</div>
+      <input type="number" id="hj_over" step="0.01" min="1.01" placeholder="Over" oninput="liveCalc()" inputmode="decimal">
+      <input type="number" id="hj_under" step="0.01" min="1.01" placeholder="Under" oninput="liveCalc()" inputmode="decimal">
+    </div>
+    <div class="qseuil-row"><span>Seuil :</span>
+      <div class="seuil-grid" id="seuils_hj_btns" style="flex:1;">
+        <div class="seuil-btn active" onclick="setSeuilHJ(2.5,this)">2.5</div>
+        <div class="seuil-btn" onclick="setSeuilHJ(3.5,this)">3.5</div>
+        <div class="seuil-btn" onclick="setSeuilHJ(1.5,this)">1.5</div>
+        <div class="seuil-btn" onclick="setSeuilHJ(4.5,this)">4.5</div>
+        <div class="seuil-btn" onclick="setSeuilHJ(0.5,this)">0.5</div>
+        <div class="seuil-btn" onclick="setSeuilHJ(5.5,this)">5.5</div>
+      </div>
+    </div>
+
+    <div class="qrow"><div class="qlabel">🧤 Arrêts gard.</div>
+      <input type="number" id="sv_over" step="0.01" min="1.01" placeholder="Over" oninput="liveCalc()" inputmode="decimal">
+      <input type="number" id="sv_under" step="0.01" min="1.01" placeholder="Under" oninput="liveCalc()" inputmode="decimal">
+    </div>
+    <div class="qseuil-row"><span>Seuil :</span>
+      <div class="seuil-grid" id="seuils_sv_btns" style="flex:1;">
+        <div class="seuil-btn active" onclick="setSeuilSV(5.5,this)">5.5</div>
+        <div class="seuil-btn" onclick="setSeuilSV(4.5,this)">4.5</div>
+        <div class="seuil-btn" onclick="setSeuilSV(6.5,this)">6.5</div>
+        <div class="seuil-btn" onclick="setSeuilSV(7.5,this)">7.5</div>
+        <div class="seuil-btn" onclick="setSeuilSV(3.5,this)">3.5</div>
+        <div class="seuil-btn" onclick="setSeuilSV(8.5,this)">8.5</div>
+      </div>
+    </div>
+
+    <div class="qrow"><div class="qlabel">🥅 Coups de pied de but</div>
+      <input type="number" id="de_over" step="0.01" min="1.01" placeholder="Over" oninput="liveCalc()" inputmode="decimal">
+      <input type="number" id="de_under" step="0.01" min="1.01" placeholder="Under" oninput="liveCalc()" inputmode="decimal">
+    </div>
+    <div class="qseuil-row"><span>Seuil :</span>
+      <div class="seuil-grid" id="seuils_de_btns" style="flex:1;">
+        <div class="seuil-btn active" onclick="setSeuilDE(15.5,this)">15.5</div>
+        <div class="seuil-btn" onclick="setSeuilDE(12.5,this)">12.5</div>
+        <div class="seuil-btn" onclick="setSeuilDE(17.5,this)">17.5</div>
+        <div class="seuil-btn" onclick="setSeuilDE(10.5,this)">10.5</div>
+        <div class="seuil-btn" onclick="setSeuilDE(20.5,this)">20.5</div>
+        <div class="seuil-btn" onclick="setSeuilDE(8.5,this)">8.5</div>
+      </div>
+    </div>
+
+    <div class="qrow"><div class="qlabel">🤾 Touches</div>
+      <input type="number" id="to_over" step="0.01" min="1.01" placeholder="Over" oninput="liveCalc()" inputmode="decimal">
+      <input type="number" id="to_under" step="0.01" min="1.01" placeholder="Under" oninput="liveCalc()" inputmode="decimal">
+    </div>
+    <div class="qseuil-row"><span>Seuil :</span>
+      <div class="seuil-grid" id="seuils_to_btns" style="flex:1;">
+        <div class="seuil-btn active" onclick="setSeuilTO(30.5,this)">30.5</div>
+        <div class="seuil-btn" onclick="setSeuilTO(25.5,this)">25.5</div>
+        <div class="seuil-btn" onclick="setSeuilTO(35.5,this)">35.5</div>
+        <div class="seuil-btn" onclick="setSeuilTO(20.5,this)">20.5</div>
+        <div class="seuil-btn" onclick="setSeuilTO(40.5,this)">40.5</div>
+        <div class="seuil-btn" onclick="setSeuilTO(45.5,this)">45.5</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<button class="analyze-btn" onclick="liveCalc()">⚡ Analyser le match</button>
+<button class="reset-btn" onclick="resetAll()">↺ Réinitialiser</button>
+
+<!-- RÉSULTATS -->
+<div class="results" id="results">
+
+  <!-- PRÉDICTIONS FINALES -->
+  <div class="card">
+    <div class="section-hdr">🎯 Prédictions finales</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5;">Basées sur les indicateurs et marchés alternatifs remplis. Joue uniquement celles avec le signal vert.</div>
+    <div id="final_preds_grid" style="display:grid;gap:8px;"></div>
+  </div>
+
+  <!-- PROBABILITÉS RÉELLES -->
+  <div class="card">
+    <div class="section-hdr">📊 Probabilités réelles (sans marge bookmaker)</div>
+    <div class="metrics3" id="m_1x2_grid">
+      <div class="metric"><div class="ml" id="ml1">Dom.</div><div class="mv" id="pv1">—</div></div>
+      <div class="metric"><div class="ml">Nul</div><div class="mv" id="pvx">—</div></div>
+      <div class="metric"><div class="ml" id="ml2">Ext.</div><div class="mv" id="pv2">—</div></div>
+    </div>
+    <div id="bars_1x2">
+      <div class="bar-row"><div class="bar-meta"><span id="bl1">Domicile</span><span id="bv1">—</span></div><div class="bar-track"><div class="bar-fill" id="bar1" style="background:#22c55e"></div></div></div>
+      <div class="bar-row"><div class="bar-meta"><span>Nul</span><span id="bvx">—</span></div><div class="bar-track"><div class="bar-fill" id="barx" style="background:#f59e0b"></div></div></div>
+      <div class="bar-row"><div class="bar-meta"><span id="bl2">Extérieur</span><span id="bv2">—</span></div><div class="bar-track"><div class="bar-fill" id="bar2" style="background:#3b82f6"></div></div></div>
+    </div>
+    <div class="metrics2" style="margin-top:8px;">
+      <div class="metric"><div class="ml">Marge 1X2</div><div class="mv sm" id="marge1x2">—</div></div>
+      <div class="metric"><div class="ml">Marge Over/Under</div><div class="mv sm" id="margeou">—</div></div>
+      <div class="metric"><div class="ml">Proba Over réelle</div><div class="mv sm" id="pover">—</div></div>
+      <div class="metric"><div class="ml">Proba Under réelle</div><div class="mv sm" id="punder">—</div></div>
+    </div>
+  </div>
+
+  <!-- VERDICT RÉSULTAT -->
+  <div id="verd_res" class="verdict v-neutral">
+    <div class="vl">🏆 PRÉDICTION RÉSULTAT</div>
+    <div class="vm" id="vr_main">—</div>
+    <div class="vd" id="vr_detail">—</div>
+  </div>
+
+  <!-- VERDICT BUTS -->
+  <div id="verd_buts" class="verdict v-neutral">
+    <div class="vl">⚽ PRÉDICTION BUTS</div>
+    <div class="vm" id="vb_main">—</div>
+    <div class="vd" id="vb_detail">—</div>
+  </div>
+
+  <!-- VERDICT CORNERS -->
+  <div id="verd_corners" class="verdict v-corner" style="display:none;">
+    <div class="vl">📐 ANALYSE CORNERS</div>
+    <div class="vm" id="vc_main">—</div>
+    <div class="vd" id="vc_detail">—</div>
+    <div class="corner-details" id="corner_details"></div>
+    <div class="seuil-result" id="seuil_result" style="margin-top:12px;"></div>
+  </div>
+
+  <!-- MARCHÉS ALTERNATIFS DÉTAILLÉS -->
+  <div class="card" id="alt_markets_section" style="display:none;">
+    <div class="section-hdr">🔬 Marchés alternatifs — Analyse complète</div>
+    <div id="alt_markets_detail"></div>
+  </div>
+
+  <!-- PRÉDICTION PREMIUM SYNTHÈSE -->
+  <div class="premium-insight" id="premium_insight">
+    <div class="pi-label">💎 PRÉDICTION PREMIUM — Synthèse intelligente</div>
+    <div id="pi_items"></div>
+  </div>
+
+  <!-- PRÉDICTION OUTSIDER -->
+  <div id="outsider_box" style="display:none;"></div>
+
+  <!-- STRATÉGIE DE MISE -->
+  <div class="card" id="strategy_section">
+    <div class="section-hdr">🎯 Stratégie de mise recommandée</div>
+    <div id="strategy_content"></div>
+  </div>
+
+  <!-- SCORES PROBABLES -->
+  <div class="card">
+    <div class="section-hdr">🎯 Scores les plus probables</div>
+    <div class="score-grid" id="scores_grid"></div>
+  </div>
+
+  <!-- TIMING -->
+  <div class="card">
+    <div class="section-hdr">⏱ Timing du premier but</div>
+    <div class="timing-grid" id="timing_grid"></div>
+  </div>
+
+  <!-- MARCHÉS RECOMMANDÉS (synthèse) -->
+  <div class="card">
+    <div class="section-hdr">💡 Tous les marchés recommandés</div>
+    <div class="markets-grid" id="markets_grid"></div>
+  </div>
+
+  <!-- INDICATEURS PAR MARCHÉ -->
+  <div class="card">
+    <div class="section-hdr">🚦 Indicateurs par marché</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5;">Chaque marché a son propre signal. Vert = signal fort à jouer, orange = mise modérée, rouge = à éviter — indépendamment de l'indice global.</div>
+    <div class="market-indicators-grid" id="market_indicators_grid"></div>
+  </div>
+
+  <!-- INDICE DE CONFIANCE -->
+  <div class="card">
+    <div class="section-hdr">📈 Indice de confiance global</div>
+    <div class="gauge-wrap">
+      <svg class="gauge-svg" width="180" height="100" viewBox="0 0 180 100">
+        <path d="M 20 90 A 70 70 0 0 1 160 90" fill="none" stroke="#dde1e6" stroke-width="14" stroke-linecap="round"/>
+        <path id="gauge_arc" d="M 20 90 A 70 70 0 0 1 160 90" fill="none" stroke="#22c55e" stroke-width="14" stroke-linecap="round" stroke-dasharray="220" stroke-dashoffset="220" style="transition:stroke-dashoffset 0.6s ease,stroke 0.4s;"/>
+        <text id="gauge_txt" x="90" y="88" text-anchor="middle" font-size="26" font-weight="800" fill="#fff">0</text>
+        <text x="90" y="100" text-anchor="middle" font-size="9" fill="#555">/100</text>
+      </svg>
+      <div class="gauge-label" id="conf_label">—</div>
+      <div class="gauge-sub" id="conf_sub">—</div>
+    </div>
+    <div style="background:var(--card2);border-radius:10px;padding:12px;margin-top:12px;">
+      <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Grille de lecture</div>
+      <div class="conf-rules">
+        <div class="cr-dot-row"><div class="cr-dot" style="background:var(--green)"></div><span style="font-size:12px;color:#333942;"><strong style="color:var(--green)">70–100</strong> — Signal fort. Jouer en confiance.</span></div>
+        <div class="cr-dot-row"><div class="cr-dot" style="background:var(--amber)"></div><span style="font-size:12px;color:#333942;"><strong style="color:var(--amber)">45–69</strong> — Signal moyen. Mise réduite.</span></div>
+        <div class="cr-dot-row"><div class="cr-dot" style="background:var(--red)"></div><span style="font-size:12px;color:#333942;"><strong style="color:var(--red)">0–44</strong> — Signal faible. Ne pas jouer.</span></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /results -->
+
+<footer>Premium v3 · Hors connexion · Marge retirée · Marchés alternatifs complets</footer>
+</div>
+
+<script>
+// ============================
+// SEUILS
+// ============================
+let seuilCorner=8.5, seuilCJ=3.5, seuilFA=21.5, seuilTC=5.5, seuilTT=22.5;
+let seuilHJ=2.5, seuilSV=5.5, seuilDE=15.5, seuilTO=30.5;
+
+function setSeuil(v,b){seuilCorner=v;setBtn('seuils_btns',b);liveCalc();}
+function setSeuilCJ(v,b){seuilCJ=v;el('seuil_cj_label').textContent=v;setBtn('seuils_cj_btns',b);liveCalc();}
+function setSeuilFA(v,b){seuilFA=v;el('seuil_fa_label').textContent=v;setBtn('seuils_fa_btns',b);liveCalc();}
+function setSeuilTC(v,b){seuilTC=v;el('seuil_tc_label').textContent=v;setBtn('seuils_tc_btns',b);liveCalc();}
+function setSeuilTT(v,b){seuilTT=v;el('seuil_tt_label').textContent=v;setBtn('seuils_tt_btns',b);liveCalc();}
+function setSeuilHJ(v,b){seuilHJ=v;el('seuil_hj_label').textContent=v;setBtn('seuils_hj_btns',b);liveCalc();}
+function setSeuilSV(v,b){seuilSV=v;el('seuil_sv_label').textContent=v;setBtn('seuils_sv_btns',b);liveCalc();}
+function setSeuilDE(v,b){seuilDE=v;el('seuil_de_label').textContent=v;setBtn('seuils_de_btns',b);liveCalc();}
+function setSeuilTO(v,b){seuilTO=v;setBtn('seuils_to_btns',b);liveCalc();}
+
+function setBtn(groupId, btn){document.querySelectorAll('#'+groupId+' .seuil-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+
+function n(id){const e=document.getElementById(id);return e?parseFloat(e.value):null;}
+function el(id){return document.getElementById(id);}
+function pct(v){return v.toFixed(1)+'%';}
+function getTeam(id,fb){const v=document.getElementById(id).value.trim();return v||fb;}
+
+// Calcule proba réelle 2 issues
+function calcOU2(o1,o2){
+  if(!(o1>1&&o2>1))return null;
+  const i1=1/o1,i2=1/o2,tot=i1+i2;
+  return{p1:(i1/tot)*100,p2:(i2/tot)*100,marge:(tot-1)*100,just1:(1/(i1/tot)).toFixed(2),just2:(1/(i2/tot)).toFixed(2)};
+}
+
+// Value bet
+function valueBet(proba,cote){return((proba/100)*cote-1)*100;}
+
+// Rendu d'un bloc marché alternatif
+function renderAltMarket(id,label,icon,seuil,ov,ud,colorClass,interpretation){
+  if(!(ov>1&&ud>1))return'';
+  const r=calcOU2(ov,ud);
+  if(!r)return'';
+  const isOver=r.p1>r.p2;
+  const proba=isOver?r.p1:r.p2;
+  const coteChoisie=isOver?ov:ud;
+  const coteJuste=isOver?r.just1:r.just2;
+  const value=valueBet(proba,coteChoisie);
+  const hasValue=value>0;
+  const margeBad=r.marge>12;
+  const ecartFaible=Math.abs(r.p1-r.p2)<4;
+
+  let signal='';
+  let signalClass='tag-gray';
+  if(margeBad){signal='⚠ Marge haute';signalClass='tag-red';}
+  else if(ecartFaible){signal='Incertain';signalClass='tag-gray';}
+  else if(hasValue&&proba>=55){signal='✅ VALUE BET';signalClass='tag-green';}
+  else if(hasValue){signal='💡 Intéressant';signalClass='tag-blue';}
+  else{signal='❌ Pas de valeur';signalClass='tag-red';}
+
+  const dirLabel=isOver?'Over '+seuil:'Under '+seuil;
+  const interp=interpretation?interpretation(isOver,proba,r.marge):'';
+
+  return`<div class="alt-market-block">
+    <div class="amb-header">
+      <span class="amb-icon">${icon}</span>
+      <span class="amb-title">${label} — <strong style="color:#1c2128">${dirLabel}</strong></span>
+      <span class="amb-badge ${signalClass}">${signal}</span>
+    </div>
+    <div class="amb-body">
+      <div class="amb-row"><span class="amb-row-label">Proba réelle</span><span class="amb-row-val" style="color:var(--purple)">${pct(proba)}</span></div>
+      <div class="amb-row"><span class="amb-row-label">Cote affichée</span><span class="amb-row-val">${coteChoisie}</span></div>
+      <div class="amb-row"><span class="amb-row-label">Cote juste (sans marge)</span><span class="amb-row-val" style="color:var(--cyan)">${coteJuste}</span></div>
+      <div class="amb-row"><span class="amb-row-label">Value bet</span><span class="amb-row-val" style="color:${hasValue?'var(--green)':'var(--red)'}">${value>0?'+':''}${value.toFixed(1)}% ${hasValue?'✅':'❌'}</span></div>
+      <div class="amb-row"><span class="amb-row-label">Marge bookmaker</span><span class="amb-row-val" style="color:${r.marge<=7?'var(--green)':r.marge<=12?'var(--amber)':'var(--red)'}">${r.marge.toFixed(1)}%</span></div>
+      <div class="amb-bar-track" style="margin-top:8px;"><div class="amb-bar-fill" style="width:${pct(proba)};background:${hasValue&&!margeBad?'var(--green)':'var(--muted)'};"></div></div>
+      ${interp?`<div style="font-size:10px;color:var(--dim);margin-top:7px;line-height:1.5;">${interp}</div>`:''}
+    </div>
+  </div>`;
+}
+
+// ============================
+// MAIN CALC
+// ============================
+function liveCalc(){
+  const t1=getTeam('team1','Domicile'), t2=getTeam('team2','Extérieur');
+  const c1=n('c1'),cx=n('cx'),c2=n('c2');
+  const over=n('over'),under=n('under');
+  const boui=n('btts_oui'),bnon=n('btts_non');
+  const co=n('c_over'),cu=n('c_under');
+
+  // Alt markets
+  const cj_o=n('cj_over'),cj_u=n('cj_under');
+  const fa_o=n('fa_over'),fa_u=n('fa_under');
+  const tc_o=n('tc_over'),tc_u=n('tc_under');
+  const tt_o=n('tt_over'),tt_u=n('tt_under');
+  const hj_o=n('hj_over'),hj_u=n('hj_under');
+  const sv_o=n('sv_over'),sv_u=n('sv_under');
+  const de_o=n('de_over'),de_u=n('de_under');
+  const to_o=n('to_over'),to_u=n('to_under');
+
+  const has1x2=c1>1&&cx>1&&c2>1;
+  const hasOU=over>1&&under>1;
+  const hasBTTS=boui>1&&bnon>1;
+  const hasCorner=co>1&&cu>1;
+  const hasAlt=(cj_o>1&&cj_u>1)||(fa_o>1&&fa_u>1)||(tc_o>1&&tc_u>1)||(tt_o>1&&tt_u>1)||
+                (hj_o>1&&hj_u>1)||(sv_o>1&&sv_u>1)||
+                (de_o>1&&de_u>1);
+
+  if(!has1x2&&!hasOU&&!hasCorner&&!hasAlt){el('results').style.display='none';return;}
+  el('results').style.display='block';
+
+  el('ml1').textContent=t1;el('bl1').textContent=t1;el('lbl1').textContent='Victoire '+t1;
+  el('ml2').textContent=t2;el('bl2').textContent=t2;el('lbl2').textContent='Victoire '+t2;
+
+  // === 1X2 ===
+  let p1=null,px=null,p2=null,marge1x2=null;
+  if(has1x2){
+    const i1=1/c1,ix=1/cx,i2=1/c2,tot=i1+ix+i2;
+    marge1x2=(tot-1)*100;p1=(i1/tot)*100;px=(ix/tot)*100;p2=(i2/tot)*100;
+    el('pv1').textContent=pct(p1);el('pvx').textContent=pct(px);el('pv2').textContent=pct(p2);
+    el('bar1').style.width=pct(p1);el('barx').style.width=pct(px);el('bar2').style.width=pct(p2);
+    el('bv1').textContent=pct(p1);el('bvx').textContent=pct(px);el('bv2').textContent=pct(p2);
+    el('marge1x2').textContent=marge1x2.toFixed(1)+'%';
+    el('marge1x2').style.color=marge1x2<=7?'var(--green)':marge1x2<=12?'var(--amber)':'var(--red)';
+  } else {['pv1','pvx','pv2','bv1','bvx','bv2','marge1x2'].forEach(id=>el(id).textContent='N/A');['bar1','barx','bar2'].forEach(id=>el(id).style.width='0%');}
+
+  // === O/U ===
+  let pO=null,pU=null,margeOU=null;
+  if(hasOU){
+    const io=1/over,iu=1/under,tot=io+iu;
+    margeOU=(tot-1)*100;pO=(io/tot)*100;pU=(iu/tot)*100;
+    el('pover').textContent=pct(pO);el('punder').textContent=pct(pU);
+    el('margeou').textContent=margeOU.toFixed(1)+'%';
+    el('margeou').style.color=margeOU<=7?'var(--green)':margeOU<=12?'var(--amber)':'var(--red)';
+  } else {el('pover').textContent='N/A';el('punder').textContent='N/A';el('margeou').textContent='N/A';}
+
+  // === BTTS ===
+  let pBTTS=null;
+  if(hasBTTS){const t=(1/boui)+(1/bnon);pBTTS=((1/boui)/t)*100;}
+
+  // === VERDICT RÉSULTAT ===
+  const vr=el('verd_res');vr.className='verdict';
+  if(has1x2){
+    if(marge1x2>12){
+      vr.classList.add('v-danger');el('vr_main').textContent='⚠ Marché 1X2 suspect';
+      el('vr_detail').textContent='Marge de '+marge1x2.toFixed(1)+'% — trop élevée. Le bookmaker se protège. Ne pas jouer ce marché.';
+    } else {
+      const ecart=Math.abs(p1-p2);
+      if(p1>p2&&p1>px){
+        vr.classList.add('v-home');
+        el('vr_main').textContent=(ecart>=15?'✅ Signal fort':'⚡ Signal moyen')+' — Victoire '+t1;
+        el('vr_detail').textContent=t1+' favori : '+pct(p1)+' de proba réelle. '+t2+' : '+pct(p2)+'. Nul : '+pct(px)+'. Écart : '+ecart.toFixed(1)+'%.';
+      } else if(p2>p1&&p2>px){
+        vr.classList.add('v-away');
+        el('vr_main').textContent=(ecart>=15?'✅ Signal fort':'⚡ Signal moyen')+' — Victoire '+t2;
+        el('vr_detail').textContent=t2+' favori : '+pct(p2)+' de proba réelle. '+t1+' : '+pct(p1)+'. Nul : '+pct(px)+'. Écart : '+ecart.toFixed(1)+'%.';
+      } else {
+        vr.classList.add('v-draw');
+        el('vr_main').textContent='⚡ Match très serré — Nul envisageable';
+        el('vr_detail').textContent=t1+' : '+pct(p1)+' · Nul : '+pct(px)+' · '+t2+' : '+pct(p2)+'. Aucun favori clair. Prudence.';
+      }
+    }
+  } else {vr.classList.add('v-neutral');el('vr_main').textContent='Entre les cotes 1X2';el('vr_detail').textContent='Remplis les cotes 1, X, 2.';}
+
+  // === VERDICT BUTS ===
+  const vb=el('verd_buts');vb.className='verdict';
+  if(hasOU){
+    const ecartOU=Math.abs(pO-pU);
+    if(margeOU>12){
+      vb.classList.add('v-danger');el('vb_main').textContent='⚠ Ne pas jouer buts';el('vb_detail').textContent='Marge Over/Under de '+margeOU.toFixed(1)+'% — trop risqué.';
+    } else if(ecartOU<5){
+      vb.classList.add('v-neutral');el('vb_main').textContent='Buts incertains';el('vb_detail').textContent='Écart de '+ecartOU.toFixed(1)+'% entre Over et Under. Signal trop faible.';
+    } else if(pO>pU){
+      vb.classList.add('v-home');
+      const bttstxt=pBTTS!=null?(pBTTS>50?' — BTTS Oui ('+pct(pBTTS)+') confirme ✅':' — BTTS crée un doute ('+pct(pBTTS)+'). Mise réduite.'):'';
+      el('vb_main').textContent=(ecartOU>=8?'✅':'⚡')+' OVER 2.5 buts';
+      el('vb_detail').textContent='Over : '+pct(pO)+' vs Under : '+pct(pU)+' (écart '+ecartOU.toFixed(1)+'%).'+bttstxt;
+    } else {
+      vb.classList.add('v-draw');
+      const bttstxt=pBTTS!=null?(pBTTS<50?' — BTTS Non ('+pct(100-pBTTS)+') confirme ✅':' — BTTS crée un doute ('+pct(pBTTS)+'). Mise réduite.'):'';
+      el('vb_main').textContent=(ecartOU>=8?'✅':'⚡')+' UNDER 2.5 buts';
+      el('vb_detail').textContent='Under : '+pct(pU)+' vs Over : '+pct(pO)+' (écart '+ecartOU.toFixed(1)+'%).'+bttstxt;
+    }
+  } else {vb.classList.add('v-neutral');el('vb_main').textContent='Entre les cotes Over/Under';el('vb_detail').textContent='Remplis Over 2.5 et Under 2.5.';}
+
+  // === VERDICT CORNERS ===
+  const vc=el('verd_corners');
+  if(hasCorner){
+    vc.style.display='block';vc.className='verdict v-corner';
+    const r=calcOU2(co,cu);
+    const pCO=r.p1,pCU=r.p2,margeC=r.marge,ecartC=Math.abs(pCO-pCU);
+    const isOverC=pCO>pCU;
+    const valueO=valueBet(pCO,co),valueU=valueBet(pCU,cu);
+    const hasValueO=valueO>0,hasValueU=valueU>0;
+
+    if(margeC>12){el('vc_main').textContent='⚠ Marché corners suspect';el('vc_detail').textContent='Marge de '+margeC.toFixed(1)+'% — ne pas jouer.';}
+    else if(ecartC<4){el('vc_main').textContent='Corners incertains';el('vc_detail').textContent='Écart '+ecartC.toFixed(1)+'% — signal trop faible.';}
+    else{el('vc_main').textContent=(isOverC?'🟣 Signal OVER ':'🟣 Signal UNDER ')+seuilCorner+' corners';el('vc_detail').textContent='Proba Over : '+pct(pCO)+' vs Under : '+pct(pCU)+'. Écart '+ecartC.toFixed(1)+'%. Marge : '+margeC.toFixed(1)+'%.';}
+
+    el('corner_details').innerHTML=`
+      <div class="corner-row">
+        <div class="cr-top"><span class="cr-label">Over ${seuilCorner} corners</span><span class="cr-badge ${isOverC?'tag-green':'tag-gray'}">${pct(pCO)}</span></div>
+        <div class="cr-bar-track"><div class="cr-bar-fill" style="width:${pct(pCO)};background:${isOverC?'var(--green)':'#555'}"></div></div>
+        <div class="cr-sub">Cote affichée : ${co} · Cote juste : ${r.just1} · Value : <span style="color:${hasValueO?'var(--green)':'var(--red)'}">${valueO>0?'+':''}${valueO.toFixed(1)}%</span></div>
+      </div>
+      <div class="corner-row">
+        <div class="cr-top"><span class="cr-label">Under ${seuilCorner} corners</span><span class="cr-badge ${!isOverC?'tag-green':'tag-gray'}">${pct(pCU)}</span></div>
+        <div class="cr-bar-track"><div class="cr-bar-fill" style="width:${pct(pCU)};background:${!isOverC?'var(--green)':'#555'}"></div></div>
+        <div class="cr-sub">Cote affichée : ${cu} · Cote juste : ${r.just2} · Value : <span style="color:${hasValueU?'var(--green)':'var(--red)'}">${valueU>0?'+':''}${valueU.toFixed(1)}%</span></div>
+      </div>
+    `;
+    const seuilRenta=1/((isOverC?pCO:pCU)/100);
+    const coteActuelle=isOverC?co:cu;
+    const diff=((coteActuelle-seuilRenta)/seuilRenta*100);
+    el('seuil_result').innerHTML=`
+      <div style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Seuil rentabilité — ${isOverC?'Over':'Under'} ${seuilCorner}</div>
+      <div class="seuil-row"><span class="sr-label">Proba réelle</span><span class="sr-val" style="color:var(--purple)">${pct(isOverC?pCO:pCU)}</span></div>
+      <div class="seuil-row"><span class="sr-label">Cote juste (sans marge)</span><span class="sr-val">${isOverC?r.just1:r.just2}</span></div>
+      <div class="seuil-row"><span class="sr-label">Cote affichée</span><span class="sr-val">${coteActuelle}</span></div>
+      <div class="seuil-row"><span class="sr-label">Seuil minimum rentable</span><span class="sr-val">${seuilRenta.toFixed(2)}</span></div>
+      <div class="seuil-row"><span class="sr-label">Value bet</span><span class="sr-val" style="color:${diff>0?'var(--green)':'var(--red)'}">${diff>0?'+':''}${diff.toFixed(1)}% ${diff>0?'✅ Avantage':'❌ Pas de valeur'}</span></div>
+    `;
+  } else {vc.style.display='none';}
+
+  // === MARCHÉS ALTERNATIFS DÉTAILLÉS ===
+  let altHtml='';
+  altHtml+=renderAltMarket('cj','Cartons jaunes','🟡',seuilCJ,cj_o,cj_u,'tag-amber',(isOver,proba,marge)=>{
+    if(marge>12)return'⚠ Le bookmaker se protège fortement sur ce marché. Signe que ce match sera physique.';
+    if(isOver)return'Un match à haute tension est attendu : pression, duels, contestations. Les cartons sont une denrée courante dans ce contexte.';
+    return'Match contrôlé tactiquement. Peu de fautes grossières attendues. Duel technique plutôt que physique.';
+  });
+  altHtml+=renderAltMarket('fa','Fautes','🔴',seuilFA,fa_o,fa_u,'tag-red',(isOver,proba,marge)=>{
+    if(marge>12)return'Bookmaker très protégé — match potentiellement intense prévu.';
+    if(isOver)return'Jeu physique, pressing intense ou forte rivalité. Les fautes seront nombreuses. Corrèle avec plus de cartons.';
+    return'Jeu fluide et technique attendu. Peu de contact rugueux. Souvent associé aux équipes techniquement dominantes.';
+  });
+  altHtml+=renderAltMarket('tc','Tirs cadrés (on target)','🎯',seuilTC,tc_o,tc_u,'tag-blue',(isOver,proba,marge)=>{
+    if(marge>12)return'Marché minimisé par le bookmaker — peut indiquer que l\'une des équipes est techniquement très supérieure.';
+    if(isOver)return'Match offensif : les attaques seront nombreuses et précises. Cohérent avec un Over buts. Marché souvent sous-côté.';
+    return'Match fermé : peu de tirs cadrés = défenses organisées. Cohérent avec Under buts ou match de gestion.';
+  });
+  altHtml+=renderAltMarket('tt','Tirs totaux (vers le but)','💨',seuilTT,tt_o,tt_u,'tag-blue',(isOver,proba,marge)=>{
+    if(marge>12)return'Bookmaker attentif sur ce marché. Peut signaler une équipe avec forte xG attendue.';
+    if(isOver)return'Match très ouvert : les deux équipes vont tenter leur chance. Pression offensive élevée des deux côtés.';
+    return'Match positionnel ou défensif. Les équipes vont se concentrer sur la gestion plutôt que l\'attaque.';
+  });
+  altHtml+=renderAltMarket('hj','Hors-jeu','⚠️',seuilHJ,hj_o,hj_u,'tag-amber',(isOver,proba,marge)=>{
+    if(marge>12)return'Marché peu liquide. Bookmaker prudent.';
+    if(isOver)return'L\'équipe attaquante joue avec des lignes hautes, pressant haut. Beaucoup de tentatives de dépassement. Ligne défensive avancée.';
+    return'Défense en bloc bas. Peu d\'infiltrations dans le dos. Les attaquants ne pénètrent pas dans le dos de la défense.';
+  });
+  altHtml+=renderAltMarket('sv','Arrêts gardien (saves)','🧤',seuilSV,sv_o,sv_u,'tag-cyan',(isOver,proba,marge)=>{
+    if(marge>12)return'Le bookmaker protège ce marché. Un gardien sera probablement sollicité fortement.';
+    if(isOver)return'Les gardiens seront très sollicités. Beaucoup de tirs = gardiens très actifs. Cohérent avec tirs cadrés élevés.';
+    return'Match peu ouvert. Les gardiens seront peu mobilisés. Cohérent avec un match fermé ou score net.';
+  });
+  altHtml+=renderAltMarket('de','Coups de pied de but','🥅',seuilDE,de_o,de_u,'tag-red',(isOver,proba,marge)=>{    if(marge>12)return'Bookmaker protégé. Match potentiellement très défensif.';
+    if(isOver)return'Une équipe est sous pression forte. Les défenses vont dégager beaucoup. Cohérent avec domination claire d\'un côté.';
+    return'Match équilibré en possession. Peu de situations de détresse défensive. Jeu fluide des deux côtés.';
+  });
+  altHtml+=renderAltMarket('to','Touches (rentrées)','🤾',seuilTO,to_o,to_u,'tag-gray',(isOver,proba,marge)=>{
+    if(marge>12)return'Marché peu courant — bookmaker protégé.';
+    if(isOver)return'Match avec beaucoup de sorties en touche. Jeu physique sur les côtés, pressing intense ou terrain étroit.';
+    return'Match fluide avec peu de sorties en touche. Bon contrôle de balle, jeu dans l\'axe.';
+  });
+
+  if(altHtml){
+    el('alt_markets_section').style.display='block';
+    el('alt_markets_detail').innerHTML=altHtml;
+  } else {el('alt_markets_section').style.display='none';}
+
+  // === PRÉDICTION PREMIUM (SYNTHÈSE) ===
+  const piItems=[];
+  const altResults={};
+
+  // Calcul centralisé des marchés alternatifs pour la synthèse
+  const altMap=[
+    {key:'cj',o:cj_o,u:cj_u,seuil:seuilCJ,label:'Cartons jaunes',icon:'🟡'},
+    {key:'fa',o:fa_o,u:fa_u,seuil:seuilFA,label:'Fautes',icon:'🔴'},
+    {key:'tc',o:tc_o,u:tc_u,seuil:seuilTC,label:'Tirs cadrés',icon:'🎯'},
+    {key:'tt',o:tt_o,u:tt_u,seuil:seuilTT,label:'Tirs totaux',icon:'💨'},
+    {key:'hj',o:hj_o,u:hj_u,seuil:seuilHJ,label:'Hors-jeu',icon:'⚠️'},
+    {key:'sv',o:sv_o,u:sv_u,seuil:seuilSV,label:'Arrêts gardien',icon:'🧤'},
+    {key:'de',o:de_o,u:de_u,seuil:seuilDE,label:'Coups de pied de but',icon:'🥅'},
+    {key:'to',o:to_o,u:to_u,seuil:seuilTO,label:'Touches (rentrées)',icon:'🤾'},
+  ];
+  altMap.forEach(m=>{
+    if(m.o>1&&m.u>1){
+      const r=calcOU2(m.o,m.u);
+      altResults[m.key]={...r,isOver:r.p1>r.p2,proba:r.p1>r.p2?r.p1:r.p2,label:m.label,icon:m.icon,seuil:m.seuil,cote:r.p1>r.p2?m.o:m.u};
+    }
+  });
+
+  // Synthèse intelligente
+  const matchIsOffensive=hasOU&&pO>pU&&pO>58;
+  const matchIsDefensive=hasOU&&pU>pO&&pU>58;
+  const matchIsOpen=hasOU&&pBTTS!=null&&pBTTS>55;
+  const hasClearFavourite=has1x2&&p1&&p2&&Math.abs(p1-p2)>=15;
+  const favName=has1x2&&p1&&p2?(p1>p2?t1:t2):null;
+  const undName=has1x2&&p1&&p2?(p1>p2?t2:t1):null;
+  const favProba=has1x2&&p1&&p2?Math.max(p1,p2):null;
+
+  // VALUE bets dans les alternatifs
+  const valueBets=Object.values(altResults).filter(r=>{
+    const v=valueBet(r.proba,r.cote);return v>0&&r.marge<=12&&Math.abs(r.p1-r.p2)>=5;
+  });
+
+  if(hasClearFavourite){
+    piItems.push({dot:'#4ade80',text:`<strong>${favName}</strong> est le favori clair avec <strong>${pct(favProba)}</strong> de probabilité réelle. Le bookmaker le confirme mais comprime la cote.`});
+  }
+  if(matchIsOffensive){
+    piItems.push({dot:'#60a5fa',text:'Les cotes Over/Under signalent un match offensif. '+(altResults.tc?'Les tirs cadrés attendus ('+altResults.tc.icon+') le confirment.':'')});
+  }
+  if(matchIsDefensive){
+    piItems.push({dot:'#fbbf24',text:'Match fermé attendu. Peu de buts. '+(altResults.sv?'Les arrêts gardien ('+altResults.sv.icon+') devraient être peu nombreux.':'')});
+  }
+  if(valueBets.length>0){
+    const top3=valueBets.sort((a,b)=>valueBet(b.proba,b.cote)-valueBet(a.proba,a.cote)).slice(0,3);
+    piItems.push({dot:'#a78bfa',text:'<strong>Value bets détectés</strong> sur les marchés alternatifs : '+top3.map(v=>`${v.icon} ${v.label} (${v.isOver?'Over':'Under'} ${v.seuil})`).join(', ')+'.'});
+  }
+  if(altResults.fa&&altResults.cj&&altResults.fa.isOver&&altResults.cj.isOver){
+    piItems.push({dot:'#f87171',text:'Fautes et cartons jaunes tous les deux en signal OVER : match physique et tendu prévu. Prudence sur les paris résultat "net".'});
+  }
+  if(altResults.tc&&altResults.sv&&altResults.tc.isOver&&altResults.sv.isOver){
+    piItems.push({dot:'#22d3ee',text:'Tirs cadrés et arrêts gardien tous en OVER : les deux gardiens seront très sollicités. Cohérent avec un match ouvert.'});
+  }
+  if(!piItems.length){
+    piItems.push({dot:'#888',text:'Entre les cotes des marchés disponibles pour obtenir une synthèse premium complète.'});
+  }
+
+  el('pi_items').innerHTML=piItems.map(i=>`<div class="pi-item"><div class="pi-dot" style="background:${i.dot}"></div><div class="pi-text">${i.text}</div></div>`).join('');
+
+  // === PRÉDICTION OUTSIDER ===
+  const ob=el('outsider_box');
+  ob.innerHTML='';
+  ob.style.display='none';
+  if(hasClearFavourite&&favProba&&favProba>=60&&p1&&p2){
+    const outsiderProba=p1>p2?p2:p1;
+    const outsiderCote=p1>p2?c2:c1;
+    const outsiderValueBet=has1x2?valueBet(outsiderProba,outsiderCote):null;
+    // Check if outsider has positive value
+    if(outsiderCote>1&&outsiderValueBet!==null){
+      ob.style.display='block';
+      let outsiderMsg='';
+      if(outsiderValueBet>5){
+        outsiderMsg=`<strong>${undName}</strong> est l'outsider mais affiche une <strong>value positive de ${outsiderValueBet.toFixed(1)}%</strong> sur sa cote. Si le match se resserre (fautes, cartons, jeu fermé), un renversement est possible. Mise prudente conseillée.`;
+      } else {
+        outsiderMsg=`La cote de <strong>${undName}</strong> (${outsiderCote}) correspond à ${pct(outsiderProba)} de probabilité réelle. Pas de value franche mais à surveiller si les marchés alternatifs signalent un match serré.`;
+      }
+      ob.innerHTML=`<div class="outsider-box"><div class="ob-label">⚡ ANALYSE OUTSIDER — ${undName}</div><div class="ob-main">Cote ${outsiderCote} → Proba réelle : ${pct(outsiderProba)} ${outsiderValueBet>0?'✅ VALUE':'—'}</div><div class="ob-detail">${outsiderMsg}</div></div>`;
+    }
+  }
+
+  // === STRATÉGIE DE MISE ===
+  const sc=el('strategy_content');
+  sc.innerHTML='';
+  let strategies=[];
+
+  if(has1x2&&hasOU){
+    const isOvv=pO>pU;
+    const mainFav=favName||t1;
+    if(hasClearFavourite&&isOvv){
+      strategies.push({
+        num:'1',color:'#15803d',colorBg:'#daf2e1',
+        title:'Stratégie principale — Favori + Buts',
+        body:`Signal double : ${mainFav} favori clair ET match offensif. Mise sur le résultat + Over peut être envisagé mais attention aux marges.`,
+        mises:[{label:'Mise principale',val:'Victoire '+mainFav,color:'var(--green)'},{label:'Mise complémentaire',val:'Over 2.5 buts',color:'var(--blue)'}]
+      });
+    }
+    if(isOvv){
+      strategies.push({
+        num:'2',color:'#1d4ed8',colorBg:'#dbe6fb',
+        title:'Stratégie marchés alternatifs',
+        body:'Match offensif = chercher de la valeur sur tirs cadrés, corners, BTTS. Ces marchés sont souvent moins surveillés par le bookmaker.',
+        mises:[{label:'Alternatif 1',val:valueBets[0]?(valueBets[0].icon+' '+(valueBets[0].isOver?'Over':'Under')+' '+valueBets[0].seuil):'Corners Over',color:'var(--purple)'},{label:'Alternatif 2',val:valueBets[1]?(valueBets[1].icon+' '+(valueBets[1].isOver?'Over':'Under')+' '+valueBets[1].seuil):'BTTS Oui',color:'var(--cyan)'}]
+      });
+    }
+    if(!isOvv){
+      strategies.push({
+        num:'1',color:'#b45309',colorBg:'#fbe5c4',
+        title:'Stratégie match fermé',
+        body:'Match défensif attendu. Les marchés alternatifs défensifs (peu de tirs, peu de cartons) sont à surveiller. Le buts Under est le signal principal.',
+        mises:[{label:'Principal',val:'Under 2.5 buts',color:'var(--amber)'},{label:'Alternatif',val:'Coups de pied de but Over',color:'var(--muted)'}]
+      });
+    }
+  } else {
+    strategies.push({
+      num:'—',color:'#8a93a0',colorBg:'#eef0f3',
+      title:'Données insuffisantes',
+      body:'Entre au minimum les cotes 1X2 et Over/Under pour obtenir une stratégie de mise.',
+      mises:[]
+    });
+  }
+
+  sc.innerHTML=strategies.map(s=>`<div class="strategy-card" style="border:0.5px solid ${s.color}20;background:${s.colorBg};">
+    <div class="sc-header"><div class="sc-num" style="background:${s.color}20;color:${s.color}">${s.num}</div><div class="sc-title">${s.title}</div></div>
+    <div class="sc-body">${s.body}</div>
+    ${s.mises.length?`<div class="sc-mises">${s.mises.map(m=>`<div class="sc-mise"><div class="sm-label">${m.label}</div><div class="sm-val" style="color:${m.color}">${m.val}</div></div>`).join('')}</div>`:''}
+  </div>`).join('');
+
+  // === SCORES PROBABLES ===
+  const sg=el('scores_grid');sg.innerHTML='';
+  if(has1x2&&hasOU){
+    const isOv=pO>pU,isBT=pBTTS!=null&&pBTTS>50;
+    let scores=[];
+    if(isOv&&isBT)scores=[{s:'2-1',l:p1>p2?t1+' gagne':t2+' gagne'},{s:'1-2',l:p2>p1?t2+' gagne':t1+' gagne'},{s:'2-2',l:'Nul prolifique'},{s:'3-1',l:'Large victoire'},{s:'1-3',l:'Large victoire'},{s:'2-0',l:'Domination'}];
+    else if(isOv&&!isBT)scores=[{s:p1>p2?'3-0':'0-3',l:'Victoire nette'},{s:p1>p2?'2-0':'0-2',l:'Victoire propre'},{s:'2-1',l:'Match animé'},{s:'3-1',l:'Large'},{s:'1-0',l:'Serré'},{s:'0-1',l:'Serré'}];
+    else if(!isOv&&isBT)scores=[{s:'1-1',l:'Nul avec buts'},{s:p1>p2?'1-0':'0-1',l:'Victoire minime'},{s:p1>p2?'2-1':'1-2',l:'Serré'},{s:'0-1',l:'Renversement'},{s:'1-2',l:'Renversement'},{s:'0-0',l:'Possible'}];
+    else scores=[{s:'0-0',l:'Match fermé'},{s:p1>p2?'1-0':'0-1',l:'Victoire défensive'},{s:p2>p1?'0-1':'1-0',l:'Surprise'},{s:'1-1',l:'Nul'},{s:p1>p2?'2-0':'0-2',l:'Nette'},{s:'0-2',l:'Renversement'}];
+    scores.forEach((sc,i)=>{const cls=i===0?'top1':i===1?'top2':i===2?'top3':'';sg.innerHTML+=`<div class="score-chip ${cls}">${sc.s}<small>${sc.l}</small></div>`;});
+  } else sg.innerHTML='<p style="font-size:12px;color:var(--dim);grid-column:1/-1">Entre 1X2 + Over/Under.</p>';
+
+  // === TIMING ===
+  const tg=el('timing_grid');tg.innerHTML='';
+  if(hasOU){
+    const isOv=pO>pU,pOval=pO||50;
+    const p30=isOv?Math.round(30+pOval*0.15):Math.round(20+pOval*0.1);
+    tg.innerHTML=isOv
+      ?`<div class="timing-item"><div class="tl">Premier but attendu</div><div class="tv" style="color:var(--green)">Avant 30 min</div></div>
+        <div class="timing-item"><div class="tl">Proba 1er but avant 30'</div><div class="tv">~${p30}%</div></div>
+        <div class="timing-item"><div class="tl">But en 1ère mi-temps</div><div class="tv" style="color:var(--green)">Très probable</div></div>
+        <div class="timing-item"><div class="tl">But en 2ème mi-temps</div><div class="tv" style="color:var(--green)">Quasi certain</div></div>`
+      :`<div class="timing-item"><div class="tl">Premier but attendu</div><div class="tv" style="color:var(--amber)">Après 45 min</div></div>
+        <div class="timing-item"><div class="tl">0-0 à la mi-temps</div><div class="tv">~38% de chance</div></div>
+        <div class="timing-item"><div class="tl">But en 1ère mi-temps</div><div class="tv" style="color:var(--red)">Peu probable</div></div>
+        <div class="timing-item"><div class="tl">0-0 final possible</div><div class="tv" style="color:var(--amber)">12–18%</div></div>`;
+  } else tg.innerHTML='<p style="font-size:12px;color:var(--dim);grid-column:1/-1">Entre Over/Under.</p>';
+
+  // === MARCHÉS RECOMMANDÉS (synthèse) ===
+  const mg=el('markets_grid');mg.innerHTML='';
+  const isOv=hasOU&&pO>pU,isBT=hasBTTS&&pBTTS>50;
+  const mkts=[];
+  if(hasOU){
+    mkts.push({l:isOv?'Over 1.5 buts':'Under 1.5 buts',s:isOv?'Plus sûr que Over 2.5':'Score fermé attendu',t:'✅ JOUER',c:'tag-green'});
+    mkts.push({l:isOv?'But chaque mi-temps':'0-0 à la mi-temps',s:isOv?'Match ouvert':'Match fermé attendu',t:isOv?'🟢 Recommandé':'🟡 Jouable',c:isOv?'tag-green':'tag-amber'});
+  }
+  if(hasBTTS)mkts.push({l:isBT?'BTTS Oui + Over 1.5':'BTTS Non',s:isBT?'Double confirmation':'Une équipe ne marquera pas',t:'✅ Signal clair',c:'tag-green'});
+  if(hasCorner){
+    const r=calcOU2(co,cu);
+    const pco=r.p1;
+    mkts.push({l:(pco>50?'Over ':'Under ')+seuilCorner+' corners',s:'Proba réelle : '+pct(pco>50?pco:100-pco),t:'🟣 Analysé',c:'tag-purple'});
+  }
+  // Value bets alternatifs dans la synthèse
+  valueBets.slice(0,3).forEach(v=>{
+    mkts.push({l:v.icon+' '+(v.isOver?'Over':'Under')+' '+v.seuil+' '+v.label,s:'Value : +'+valueBet(v.proba,v.cote).toFixed(1)+'% · Proba : '+pct(v.proba),t:'💎 VALUE',c:'tag-purple'});
+  });
+  if(has1x2&&p1&&p2&&Math.abs(p1-p2)>=15){
+    const fav=p1>p2?t1:t2;
+    const dc=p1>p2?(fav+' ou Nul (1X)'):('Nul ou '+fav+' (X2)');
+    mkts.push({l:dc+' + Over 1.5',s:'Combo sécurisé : double chance + buts',t:'🔥 Combo fort',c:'tag-green'});
+  }
+  mkts.forEach(m=>{mg.innerHTML+=`<div class="market-item"><div class="mi-label">${m.l}<small>${m.s}</small></div><div class="mi-right"><div class="mi-val ${m.c}">${m.t}</div></div></div>`;});
+
+  // === INDICATEURS INDIVIDUELS PAR MARCHÉ ===
+  const mig=el('market_indicators_grid');mig.innerHTML='';
+  function trafficColor(v){return v>=72?'var(--green)':v>=55?'var(--amber)':'var(--red)';}
+  function trafficTag(v){return v>=72?'✅ JOUER':v>=55?'🟡 PRUDENCE':'🔴 ÉVITER';}
+  function trafficColorOU(v){return v>=70?'var(--green)':v>=55?'var(--amber)':'var(--red)';}
+  function trafficTagOU(v){return v>=70?'✅ JOUER':v>=55?'🟡 PRUDENCE':'🔴 ÉVITER';}
+  function pushIndicator(name,val,detail,estimated,colorFn,tagFn){
+    if(val==null)return;
+    const v=Math.max(1,Math.min(99,val));
+    const cFn=colorFn||trafficColor, tFn=tagFn||trafficTag;
+    mig.innerHTML+=`<div class="mi-card"><div class="mi-dot" style="background:${cFn(v)}"></div>
+      <div class="mi-body"><div class="mi-name">${name}</div><div class="mi-detail">${detail}${estimated?' · estimé':''}</div></div>
+      <div><div class="mi-pct" style="color:${cFn(v)}">${v.toFixed(0)}%</div><div class="mi-tag" style="color:${cFn(v)}">${tFn(v)}</div></div></div>`;
+  }
+
+  // -- Over/Under 2.5 (mise principale) : seuil ≥70% vert, 55-69% orange, <55% rouge
+  if(hasOU&&pO!=null&&pU!=null){
+    const isMatchOuvert=pO>pU;
+    const probaSignal=Math.max(pO,pU); // on prend la proba du côté recommandé (Over ou Under)
+    const label=isMatchOuvert?'⚡ Over 2.5 buts — Match ouvert':'🔒 Under 2.5 buts — Match fermé';
+    const detail=(isMatchOuvert?'Over':'Under')+' 2.5 recommandé · Proba réelle : '+pct(probaSignal);
+    pushIndicator(label,probaSignal,detail,false,trafficColorOU,trafficTagOU);
+  }
+
+  // -- BTTS : cote si dispo, sinon estimation via écart 1X2 + O/U
+  let pBTTSind=null,bttsEst=false;
+  if(hasBTTS){pBTTSind=pBTTS;}
+  else if(has1x2&&p1&&p2){
+    const ecart=Math.abs(p1-p2);
+    let base=58-(ecart*0.6);
+    if(hasOU&&pO!=null)base+=(pO-50)*0.3;
+    pBTTSind=Math.max(20,Math.min(80,base));bttsEst=true;
+  }
+  pushIndicator('⚽ BTTS — Les deux marquent',pBTTSind,pBTTSind!=null?'Proba réelle : '+pct(pBTTSind):'',bttsEst);
+
+  // -- Over 1.5 buts : dérivé de Over 2.5 si dispo, sinon estimation via écart 1X2
+  let pOver15=null,o15Est=false;
+  if(hasOU&&pO!=null){
+    pOver15=Math.min(96,pO+(100-pO)*0.45);
+  } else if(has1x2&&p1&&p2){
+    const ecart=Math.abs(p1-p2);
+    pOver15=Math.max(35,Math.min(85,60+ecart*0.4));o15Est=true;
+  }
+  pushIndicator('⚡ Over 1.5 buts',pOver15,pOver15!=null?'Proba réelle : '+pct(pOver15):'',o15Est);
+
+  // -- Combo fort : Double chance favori + Over 1.5
+  let pCombo=null;
+  if(has1x2&&p1&&p2&&Math.abs(p1-p2)>=15&&pOver15!=null){
+    const pDC=Math.max(p1,p2)+px;
+    pCombo=(pDC/100)*pOver15;
+  }
+  pushIndicator('🔥 Combo fort — Double chance + Over 1.5',pCombo,pCombo!=null?'Proba combo estimée : '+pct(pCombo):'',pCombo!=null);
+
+  if(!hasOU&&!pBTTSind&&!pOver15&&!pCombo){mig.innerHTML='<p style="font-size:12px;color:var(--dim);">Entre au moins les cotes 1X2 ou Over/Under pour activer ces indicateurs.</p>';}
+
+  // === PRÉDICTIONS FINALES (marchés alternatifs uniquement) ===
+  const fpg=el('final_preds_grid');fpg.innerHTML='';
+  function pushPred(icon,name,detail,level){
+    const badge=level==='green'?'✅ Jouer':level==='amber'?'🟡 Prudence':'🔴 Éviter';
+    fpg.innerHTML+=`<div class="pred-card ${level}">
+      <div class="pred-icon">${icon}</div>
+      <div class="pred-body"><div class="pred-name">${name}</div><div class="pred-detail">${detail}</div></div>
+      <div class="pred-badge ${level}">${badge}</div>
+    </div>`;
+  }
+  function altPred(overId,underId,seuil,icon,label){
+    const r=calcOU2(n(overId),n(underId));
+    if(!r)return;
+    const isOv=r.p1>r.p2;
+    const sig=Math.max(r.p1,r.p2);
+    const lvl=sig>=70?'green':sig>=55?'amber':'red';
+    const dir=isOv?'Over':'Under';
+    pushPred(icon,`${dir} ${seuil} ${label}`,`Proba réelle : ${pct(sig)} — ${dir} ${seuil} ${label.toLowerCase()} attendu`,lvl);
+  }
+
+  altPred('c_over','c_under',seuilCorner,'📐','Corners');
+  altPred('cj_over','cj_under',seuilCJ,'🟨','Cartons jaunes');
+  altPred('fa_over','fa_under',seuilFA,'🦵','Fautes');
+  altPred('tc_over','tc_under',seuilTC,'🎯','Tirs cadrés');
+  altPred('tt_over','tt_under',seuilTT,'💨','Tirs totaux');
+  altPred('hj_over','hj_under',seuilHJ,'🚩','Hors-jeu');
+  altPred('sv_over','sv_under',seuilSV,'🧤','Arrêts gardien');
+  altPred('de_over','de_under',seuilDE,'🥅','Coups de pied de but');
+  altPred('to_over','to_under',seuilTO,'🤾','Touches (rentrées)');
+
+  if(fpg.innerHTML===''){
+    fpg.innerHTML='<p style="font-size:12px;color:var(--dim);padding:8px 0;">Remplis les cotes des marchés alternatifs (corners, cartons, fautes...) pour générer les prédictions.</p>';
+  }
+
+  // === INDICE DE CONFIANCE ===
+  let score=0,txts=[];
+  if(has1x2&&marge1x2!=null){
+    if(marge1x2<=7){score+=20;txts.push('Cotes 1X2 honnêtes');}
+    else if(marge1x2<=12){score+=12;txts.push('Marge 1X2 correcte');}
+    else txts.push('⚠ Marge 1X2 élevée');
+    if(p1&&p2){const e=Math.abs(p1-p2);if(e>=15){score+=20;txts.push('Favori très clair');}else if(e>=8){score+=12;txts.push('Légère domination');}else{score+=4;txts.push('Match équilibré');}}
+  }
+  if(hasOU&&margeOU!=null){
+    if(margeOU<=7){score+=12;txts.push('Over/Under fiable');}else if(margeOU<=12){score+=6;}
+    const eOU=pO&&pU?Math.abs(pO-pU):0;
+    if(eOU>=10){score+=12;txts.push('Signal buts fort');}else if(eOU>=5){score+=6;txts.push('Signal buts moyen');}
+  }
+  if(hasBTTS){score+=8;txts.push('BTTS confirmé');}
+  if(hasCorner){
+    const r=calcOU2(co,cu);const eC=Math.abs(r.p1-r.p2)*2;
+    if(eC>=10){score+=8;txts.push('Corners fort');}else{score+=3;txts.push('Corners analysés');}
+  }
+  if(hasOU&&hasBTTS){const isOvv=pO>pU,isBTT=pBTTS>50;if((isOvv&&isBTT)||(!isOvv&&!isBTT)){score+=5;txts.push('Signaux cohérents');}}
+  // Bonus marchés alternatifs
+  const nbValueBets=valueBets.length;
+  if(nbValueBets>=3){score+=10;txts.push(nbValueBets+' value bets alternatifs');}
+  else if(nbValueBets>=1){score+=5;txts.push(nbValueBets+' value bet alternatif');}
+  if(altMap.filter(m=>m.o>1&&m.u>1).length>=5){score+=5;txts.push('Analyse complète');}
+
+  score=Math.min(score,100);
+  const col=score>=70?'var(--green)':score>=45?'var(--amber)':'var(--red)';
+  const arcLen=220,offset=arcLen-(score/100*arcLen);
+  el('gauge_arc').style.strokeDashoffset=offset;
+  el('gauge_arc').style.stroke=score>=70?'#4ade80':score>=45?'#fbbf24':'#f87171';
+  el('gauge_txt').textContent=score;
+  el('gauge_txt').style.fill=score>=70?'#4ade80':score>=45?'#fbbf24':'#f87171';
+  const lbl=score>=70?'✅ Confiance élevée — signal fiable':score>=45?'⚡ Confiance moyenne — prudence':'⚠ Confiance faible — ne pas jouer';
+  el('conf_label').textContent=lbl;
+  el('conf_label').style.color=col;
+  el('conf_sub').textContent='Facteurs : '+txts.join(' · ');
+}
+
+function resetAll(){
+  ['team1','team2','c1','cx','c2','over','under','btts_oui','btts_non','c_over','c_under',
+   'cj_over','cj_under','fa_over','fa_under','tc_over','tc_under','tt_over','tt_under',
+   'hj_over','hj_under','sv_over','sv_under',
+   'de_over','de_under','to_over','to_under'].forEach(id=>{document.getElementById(id).value='';});
+  el('lbl1').textContent='Victoire Dom.';el('lbl2').textContent='Victoire Ext.';
+  el('results').style.display='none';
+  seuilCorner=8.5;
+  document.querySelectorAll('#seuils_btns .seuil-btn').forEach((b,i)=>{b.classList.toggle('active',i===0);});
+}
+
+// === RECHERCHE AUTOMATIQUE VIA ODDS API ===
+const API_KEY='54041e3967047ae76b29607d25038124';
+
+const FR_TO_EN={
+  'pays-bas':'netherlands','hollande':'netherlands','allemagne':'germany',
+  'espagne':'spain','france':'france','angleterre':'england',
+  'italie':'italy','portugal':'portugal','belgique':'belgium',
+  'brésil':'brazil','bresil':'brazil','argentine':'argentina',
+  'maroc':'morocco','sénégal':'senegal','senegal':'senegal',
+  'côte d\'ivoire':'ivory coast','cote d\'ivoire':'ivory coast',
+  'cameroun':'cameroon','ghana':'ghana','nigéria':'nigeria','nigeria':'nigeria',
+  'algérie':'algeria','algerie':'algeria','tunisie':'tunisia',
+  'égypte':'egypt','egypte':'egypt','mali':'mali','togo':'togo',
+  'cap-vert':'cape verde','capvert':'cape verde',
+  'etats-unis':'united states','usa':'united states',
+  'mexique':'mexico','japon':'japan','corée':'south korea','coree':'south korea',
+  'australie':'australia','croatie':'croatia','serbie':'serbia',
+  'pologne':'poland','suisse':'switzerland','autriche':'austria',
+  'suède':'sweden','suede':'sweden','danemark':'denmark',
+  'norvège':'norway','norvege':'norway','turquie':'turkey',
+  'russie':'russia','ukraine':'ukraine','roumanie':'romania',
+  'lyon':'olympique lyonnais','marseille':'olympique de marseille',
+  'psg':'paris saint-germain','paris':'paris saint-germain',
+  'monaco':'as monaco','nice':'ogc nice','lille':'losc lille',
+  'bordeaux':'fc girondins de bordeaux','rennes':'stade rennais',
+  'strasbourg':'rc strasbourg','nantes':'fc nantes','lens':'rc lens',
+  'real':'real madrid','barça':'fc barcelona','barca':'fc barcelona',
+  'barcelone':'fc barcelona','atletico':'atletico madrid',
+  'juventus':'juventus','milan':'ac milan','inter':'inter milan',
+  'naples':'ssc napoli','rome':'as roma','lazio':'ss lazio',
+  'arsenal':'arsenal','chelsea':'chelsea','liverpool':'liverpool',
+  'manchester':'manchester city','man city':'manchester city',
+  'man united':'manchester united','tottenham':'tottenham hotspur',
+  'bayern':'fc bayern münchen','dortmund':'borussia dortmund',
+  'porto':'fc porto','benfica':'sl benfica','ajax':'ajax',
+};
+
+function translateQuery(q){
+  const lower=q.toLowerCase().trim();
+  return FR_TO_EN[lower]||lower;
+}
+
+async function searchMatches(){
+  const rawQuery=document.getElementById('search_query').value.trim();
+  const query=translateQuery(rawQuery).toLowerCase();
+  const sport=document.getElementById('search_sport').value;
+  const status=document.getElementById('search_status');
+  const results=document.getElementById('search_results');
+  results.innerHTML='';
+  if(!rawQuery){status.textContent='Saisis le nom d\'une équipe.';return;}
+  status.textContent='⏳ Recherche en cours...';
+  try{
+    const url=`https://api.the-odds-api.com/v4/sports/${sport}/odds/?apiKey=${API_KEY}&regions=eu&markets=h2h,totals&oddsFormat=decimal`;
+    const res=await fetch(url);
+    if(!res.ok){status.textContent='❌ Erreur API ('+res.status+'). Vérifie ta connexion.';return;}
+    const data=await res.json();
+    const matches=data.filter(m=>
+      m.home_team.toLowerCase().includes(query)||
+      m.away_team.toLowerCase().includes(query)
+    );
+    if(matches.length===0){
+      status.innerHTML=`Aucun match trouvé pour "<b>${rawQuery}</b>".<br>Essaie en anglais ou change de championnat.`;
+      return;
+    }
+    status.textContent=matches.length+' match(s) trouvé(s) — appuie pour remplir';
+    matches.slice(0,6).forEach(m=>{
+      const btn=document.createElement('div');
+      btn.style.cssText='background:var(--card2);border:0.5px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text);';
+      const date=new Date(m.commence_time).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+      btn.innerHTML=`<div>${m.home_team} <span style="color:var(--muted)">vs</span> ${m.away_team}</div><div style="font-size:10px;color:var(--dim);margin-top:3px;">${date}</div>`;
+      btn.onclick=()=>fillFromMatch(m);
+      results.appendChild(btn);
+    });
+  }catch(e){status.textContent='❌ Erreur réseau. Vérifie ta connexion internet.';}
+}
+
+function fillFromMatch(m){
+  // Noms équipes
+  document.getElementById('team1').value=m.home_team;
+  document.getElementById('team2').value=m.away_team;
+  // Chercher bookmaker avec h2h et totals
+  const bk=m.bookmakers[0];
+  if(!bk){alert('Aucune cote disponible pour ce match.');return;}
+  bk.markets.forEach(mkt=>{
+    if(mkt.key==='h2h'){
+      const [h,d,a]=[mkt.outcomes.find(o=>o.name===m.home_team),
+                     mkt.outcomes.find(o=>o.name==='Draw'),
+                     mkt.outcomes.find(o=>o.name===m.away_team)];
+      if(h)document.getElementById('c1').value=h.price.toFixed(2);
+      if(d)document.getElementById('cx').value=d.price.toFixed(2);
+      if(a)document.getElementById('c2').value=a.price.toFixed(2);
+    }
+    if(mkt.key==='totals'){
+      const ov=mkt.outcomes.find(o=>o.name==='Over');
+      const un=mkt.outcomes.find(o=>o.name==='Under');
+      if(ov)document.getElementById('over').value=ov.price.toFixed(2);
+      if(un)document.getElementById('under').value=un.price.toFixed(2);
+    }
+  });
+  document.getElementById('search_results').innerHTML='';
+  document.getElementById('search_status').textContent='✅ Cotes remplies — complète les marchés alternatifs si dispo, puis analyse.';
+  liveCalc();
+  // Scroll vers les équipes
+  document.getElementById('team1').scrollIntoView({behavior:'smooth'});
+}
+</script>
+</body>
+</html>
