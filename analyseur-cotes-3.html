@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analyseur de cotes — Intervalle de buts</title>
+<style>
+  :root{
+    --pitch-dark: #0d1f14;
+    --pitch: #123420;
+    --pitch-line: #1e4a2e;
+    --chalk: #eef3ec;
+    --chalk-dim: #a9bdb0;
+    --gold: #d4a530;
+    --gold-bright: #f0c757;
+    --red-card: #b3432b;
+    --mono: 'JetBrains Mono', 'Courier New', monospace;
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin:0;
+    background: var(--pitch-dark);
+    background-image:
+      repeating-linear-gradient(90deg, transparent, transparent 79px, rgba(255,255,255,0.02) 79px, rgba(255,255,255,0.02) 80px);
+    color: var(--chalk);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    padding: 0 0 60px 0;
+  }
+  header{
+    padding: 36px 20px 28px;
+    text-align: center;
+    border-bottom: 1px solid var(--pitch-line);
+    position: relative;
+    overflow: hidden;
+  }
+  header::before{
+    content:"";
+    position:absolute;
+    top:-50%; left:50%;
+    width:600px; height:600px;
+    border: 1px solid rgba(212,165,48,0.08);
+    border-radius:50%;
+    transform: translateX(-50%);
+  }
+  .eyebrow{
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-transform: uppercase;
+    position: relative;
+  }
+  h1{
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: clamp(28px, 6vw, 42px);
+    margin: 10px 0 6px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    position: relative;
+  }
+  .subtitle{
+    color: var(--chalk-dim);
+    font-size: 14px;
+    max-width: 480px;
+    margin: 0 auto;
+    position: relative;
+    line-height: 1.5;
+  }
+  main{
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 32px 18px;
+  }
+
+  .panel-title{
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    display:flex;
+    align-items:center;
+    gap: 8px;
+    margin-top: 30px;
+  }
+  .panel-title::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background: var(--pitch-line);
+  }
+  .panel-note{
+    font-size: 12.5px;
+    color: var(--chalk-dim);
+    margin-bottom: 14px;
+    line-height:1.5;
+  }
+
+  table.editable{
+    width:100%;
+    border-collapse: collapse;
+    margin-bottom: 8px;
+  }
+  table.editable th{
+    text-align:left;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--chalk-dim);
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--pitch-line);
+  }
+  table.editable td{
+    padding: 5px 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 14px;
+  }
+  table.editable input{
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--pitch-line);
+    color: var(--chalk);
+    padding: 7px 8px;
+    border-radius: 5px;
+    font-family: var(--mono);
+    font-size: 14px;
+  }
+  table.editable input:focus{ outline: none; border-color: var(--gold); }
+  table.editable .label-cell{
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--chalk-dim);
+    width: 60px;
+    padding-left: 4px;
+  }
+  table.editable .del{
+    background:none; border:none; color: var(--red-card); cursor:pointer; font-size:16px;
+    padding: 4px 8px;
+  }
+  .add-row{
+    background:none;
+    border: 1px dashed var(--pitch-line);
+    color: var(--chalk-dim);
+    padding: 8px;
+    width:100%;
+    border-radius: 6px;
+    cursor:pointer;
+    font-size: 12px;
+    margin-bottom: 20px;
+    font-family: inherit;
+  }
+  .add-row:hover{ color: var(--gold); border-color: var(--gold); }
+
+  .compute-btn{
+    width:100%;
+    background: var(--gold);
+    color: var(--pitch-dark);
+    border: none;
+    padding: 15px;
+    font-size: 15px;
+    font-weight: 700;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 10px;
+    font-family: inherit;
+    letter-spacing: 0.5px;
+  }
+  .compute-btn:hover{ background: var(--gold-bright); }
+
+  .scoreboard{
+    background: var(--pitch);
+    border: 1px solid var(--pitch-line);
+    border-radius: 12px;
+    padding: 26px 20px;
+    text-align:center;
+    margin: 24px 0;
+  }
+  .scoreboard .range-label{
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--chalk-dim);
+    text-transform:uppercase;
+    margin-bottom: 10px;
+  }
+  .scoreboard .range-numbers{
+    font-family: Georgia, serif;
+    font-size: clamp(40px, 12vw, 64px);
+    font-weight:700;
+    color: var(--gold-bright);
+    line-height:1;
+    display:flex;
+    align-items:baseline;
+    justify-content:center;
+    gap: 16px;
+  }
+  .scoreboard .range-numbers .dash{ font-size: 0.5em; color: var(--chalk-dim); }
+  .scoreboard .range-sub{
+    font-size: 12.5px;
+    color: var(--chalk-dim);
+    margin-top: 10px;
+  }
+
+  .dist-bars{ margin: 18px 0 26px; }
+  .dist-row{ display:flex; align-items:center; gap: 10px; margin-bottom: 7px; }
+  .dist-row .n{
+    font-family: var(--mono); font-size: 13px; width: 26px; text-align:right; color: var(--chalk-dim);
+  }
+  .dist-row .track{
+    flex:1; height: 18px; background: rgba(255,255,255,0.04); border-radius: 4px; overflow:hidden; position:relative;
+  }
+  .dist-row .fill{ height:100%; background: linear-gradient(90deg, var(--gold), var(--gold-bright)); border-radius: 4px; }
+  .dist-row.top .fill{ background: linear-gradient(90deg, #c94f37, var(--red-card)); }
+  .dist-row .pct{ font-family: var(--mono); font-size: 12px; width: 48px; color: var(--chalk-dim); }
+
+  .two-col-summary{ display:grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 22px; }
+  @media (max-width: 480px){ .two-col-summary{ grid-template-columns: 1fr; } }
+  .stat-card{
+    background: rgba(255,255,255,0.03); border: 1px solid var(--pitch-line); border-radius: 10px; padding: 16px;
+  }
+  .stat-card .k{
+    font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; color: var(--chalk-dim); text-transform:uppercase; margin-bottom: 6px;
+  }
+  .stat-card .v{ font-family: Georgia, serif; font-size: 26px; font-weight:700; color: var(--chalk); }
+
+  .disclaimer{
+    font-size: 11.5px; color: var(--chalk-dim); border-top: 1px solid var(--pitch-line); padding-top: 16px; margin-top: 30px; line-height: 1.6;
+  }
+
+  .reset-btn{
+    display:block; margin: 26px auto 0; background:none; border:none; color: var(--chalk-dim);
+    font-size: 12px; text-decoration: underline; cursor:pointer; font-family: inherit;
+  }
+  .reset-btn:hover{ color: var(--gold); }
+
+  .log-block{
+    background: rgba(255,255,255,0.03); border: 1px solid var(--pitch-line); border-radius: 10px; padding: 16px; margin-top: 22px;
+  }
+  .log-input-row{ display:flex; gap: 10px; }
+  .score-input{
+    flex:1; background: rgba(255,255,255,0.05); border: 1px solid var(--pitch-line); color: var(--chalk);
+    padding: 11px 12px; border-radius: 7px; font-family: var(--mono); font-size: 15px; text-align:center;
+  }
+  .score-input:focus{ outline:none; border-color: var(--gold); }
+  .log-btn{
+    background: var(--gold); color: var(--pitch-dark); border:none; padding: 11px 16px;
+    border-radius: 7px; font-weight: 700; font-size: 13px; cursor:pointer; font-family: inherit; white-space: nowrap;
+  }
+  .log-btn:hover{ background: var(--gold-bright); }
+  .status{ text-align:center; font-family: var(--mono); font-size: 12px; color: var(--gold); margin-top: 10px; min-height: 18px; }
+
+  #historyTable td{ font-size: 13px; }
+  #historyTable .tag{
+    display:inline-block; font-family: var(--mono); font-size: 10.5px; padding: 3px 8px; border-radius: 4px; letter-spacing: 0.5px;
+  }
+  #historyTable .tag.in{ background: rgba(80,160,90,0.18); color: #7fd68f; }
+  #historyTable .tag.out{ background: rgba(179,67,43,0.18); color: #e08a72; }
+
+  .panel{ display:none; }
+  .panel.visible{ display:block; }
+
+  .two-tables{ display:grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 560px){ .two-tables{ grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Saisie manuelle · Football virtuel</div>
+  <h1>Intervalle de buts</h1>
+  <div class="subtitle">Entre les cotes directement depuis les captures — les cases sont déjà là, tu remplis juste les chiffres.</div>
+</header>
+
+<main>
+
+  <div class="two-tables">
+    <div>
+      <div class="panel-title" style="margin-top:0">Total de buts</div>
+      <div class="panel-note">Cote pour chaque nombre de buts total.</div>
+      <table class="editable" id="table1">
+        <thead><tr><th>Buts</th><th>Cote</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <button class="add-row" data-target="1">+ ajouter une ligne</button>
+    </div>
+
+    <div>
+      <div class="panel-title" style="margin-top:0">Score exact</div>
+      <div class="panel-note">Cote pour chaque score exact.</div>
+      <table class="editable" id="table2">
+        <thead><tr><th>Score</th><th>Cote</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <button class="add-row" data-target="2">+ ajouter une ligne</button>
+    </div>
+  </div>
+
+  <button class="compute-btn" id="computeBtn">Calculer les probabilités</button>
+  <div class="status" id="status"></div>
+
+  <!-- Results -->
+  <section class="panel" id="results">
+
+    <div class="scoreboard">
+      <div class="range-label">Intervalle de buts probable</div>
+      <div class="range-numbers">
+        <span id="rMin">–</span><span class="dash">à</span><span id="rMax">–</span>
+      </div>
+      <div class="range-sub" id="rSub">basé sur les deux tableaux de cotes combinés</div>
+    </div>
+
+    <div class="two-col-summary">
+      <div class="stat-card">
+        <div class="k">Total le plus probable</div>
+        <div class="v" id="statMode">–</div>
+      </div>
+      <div class="stat-card">
+        <div class="k">Moyenne pondérée</div>
+        <div class="v" id="statMean">–</div>
+      </div>
+    </div>
+
+    <div class="two-col-summary">
+      <div class="stat-card" style="grid-column: 1 / -1;">
+        <div class="k">Les deux équipes marquent (BTTS)</div>
+        <div class="v" id="statBtts">–</div>
+        <div class="panel-note" style="margin:6px 0 0;" id="statBttsNote">calculé à partir du tableau "score exact"</div>
+      </div>
+    </div>
+
+    <div class="panel-title">Distribution — Total de buts</div>
+    <div class="panel-note">Probabilité implicite par nombre de buts (marché "total buts", normalisée).</div>
+    <div class="dist-bars" id="distTotal"></div>
+
+    <div class="panel-title">Distribution — Score exact regroupé par total</div>
+    <div class="panel-note">Même calcul, dérivé des scores exacts en additionnant chaque paire par total de buts.</div>
+    <div class="dist-bars" id="distScore"></div>
+
+    <div class="disclaimer">
+      Ces chiffres reflètent uniquement les probabilités implicites des cotes du bookmaker à l'instant de la capture — pas une prédiction du résultat réel. Le match FIFA/virtuel est généré par un algorithme ; le hasard reste entier.
+    </div>
+
+    <div class="log-block">
+      <div class="panel-title" style="margin-top:0">Noter le score final</div>
+      <div class="panel-note">Une fois le match terminé, entre le score réel pour l'ajouter à l'historique.</div>
+      <div class="log-input-row">
+        <input type="text" id="finalScoreInput" placeholder="ex: 2-3" class="score-input">
+        <button class="log-btn" id="logBtn">Ajouter à l'historique</button>
+      </div>
+      <div class="status" id="logStatus"></div>
+    </div>
+
+    <button class="reset-btn" id="resetBtn">Vider les deux tableaux</button>
+  </section>
+
+  <section class="panel" id="historyPanel">
+    <div class="panel-title">Historique — fiabilité sur la durée</div>
+    <div class="panel-note">Calculé uniquement à partir des matchs que tu as toi-même notés ci-dessus. Aucune donnée n'est envoyée nulle part — tout reste sur cet appareil, dans ce navigateur.</div>
+
+    <div class="two-col-summary">
+      <div class="stat-card">
+        <div class="k">Matchs enregistrés</div>
+        <div class="v" id="histCount">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="k">Dans l'intervalle</div>
+        <div class="v" id="histHitRate">–</div>
+      </div>
+    </div>
+
+    <table class="editable" id="historyTable">
+      <thead><tr><th>Score</th><th>Total</th><th>Intervalle</th><th>Résultat</th><th>BTTS</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <button class="reset-btn" id="clearHistoryBtn" style="color:var(--red-card)">Effacer tout l'historique</button>
+  </section>
+
+</main>
+
+<script>
+let lastComputed = null;
+
+// Labels par défaut, basés sur les captures déjà vues (union des scores les plus fréquents)
+const DEFAULT_TOTAL_LABELS = ['0','1','2','3','4','5','6','7'];
+const DEFAULT_SCORE_LABELS = [
+  '0-0','1-0','0-1','1-1','2-0','0-2','2-1','1-2',
+  '3-0','0-3','3-1','1-3','2-2','3-2','2-3',
+  '4-0','0-4','4-1','1-4','2-4','4-2','3-3','5-0','5-1'
+];
+
+function initTable(tableId, labels){
+  const tbody = document.querySelector('#'+tableId+' tbody');
+  tbody.innerHTML = '';
+  labels.forEach(label => addRow(tableId, label, ''));
+}
+
+function addRow(tableId, label, odds){
+  const tbody = document.querySelector('#'+tableId+' tbody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" class="label-input" value="${label}" style="width:70px"></td>
+    <td><input type="text" class="odds-input" value="${odds}" placeholder="cote" inputmode="decimal"></td>
+    <td><button class="del">×</button></td>
+  `;
+  tr.querySelector('.del').addEventListener('click', ()=> tr.remove());
+  tbody.appendChild(tr);
+}
+
+document.querySelectorAll('.add-row').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const target = btn.dataset.target;
+    addRow('table'+target, target==='1' ? '' : '0-0', '');
+  });
+});
+
+document.getElementById('computeBtn').addEventListener('click', compute);
+
+function readTable(tableId){
+  const rows = [];
+  document.querySelectorAll('#'+tableId+' tbody tr').forEach(tr=>{
+    const label = tr.querySelector('.label-input').value.trim();
+    const oddsRaw = tr.querySelector('.odds-input').value.trim();
+    const odds = parseFloat(oddsRaw.replace(',','.'));
+    if(label && !isNaN(odds) && odds > 1){
+      rows.push({label, odds});
+    }
+  });
+  return rows;
+}
+
+function normalize(rows, keyFn){
+  const withProb = rows.map(r => ({...r, raw: 1/r.odds}));
+  const sum = withProb.reduce((a,b)=>a+b.raw, 0);
+  return withProb.map(r => ({...r, prob: r.raw/sum, total: keyFn(r)}));
+}
+
+const statusEl = document.getElementById('status');
+
+function compute(){
+  const t1 = readTable('table1');
+  const t2 = readTable('table2');
+
+  if(t1.length === 0 && t2.length === 0){
+    statusEl.textContent = 'Remplis au moins une cote dans un des deux tableaux pour calculer.';
+    return;
+  }
+  statusEl.textContent = '';
+
+  const dist1 = t1.length ? normalize(t1, r => parseInt(r.label)) : [];
+  const dist2raw = t2.length ? normalize(t2, r => {
+    const [a,b] = r.label.split('-').map(Number);
+    return a+b;
+  }) : [];
+
+  const dist2map = {};
+  dist2raw.forEach(r=>{
+    dist2map[r.total] = (dist2map[r.total]||0) + r.prob;
+  });
+  const dist2 = Object.keys(dist2map).map(k=>({total:parseInt(k), prob:dist2map[k]})).sort((a,b)=>a.total-b.total);
+
+  const maxTotal = Math.max(
+    dist1.length ? Math.max(...dist1.map(d=>d.total)) : 0,
+    dist2.length ? Math.max(...dist2.map(d=>d.total)) : 0
+  );
+  const combined = [];
+  for(let g=0; g<=maxTotal; g++){
+    const p1 = dist1.find(d=>d.total===g);
+    const p2 = dist2.find(d=>d.total===g);
+    let p;
+    if(p1 && p2) p = (p1.prob + p2.prob)/2;
+    else if(p1) p = p1.prob;
+    else if(p2) p = p2.prob;
+    else p = 0;
+    combined.push({total:g, prob:p});
+  }
+  const csum = combined.reduce((a,b)=>a+b.prob,0);
+  combined.forEach(c=>c.prob = c.prob/csum);
+
+  const sorted = [...combined].sort((a,b)=>b.prob-a.prob);
+  let cum = 0;
+  const included = new Set();
+  for(const c of sorted){
+    if(cum >= 0.80) break;
+    included.add(c.total);
+    cum += c.prob;
+  }
+  const includedTotals = [...included];
+  const rMin = Math.min(...includedTotals);
+  const rMax = Math.max(...includedTotals);
+
+  const mode = sorted[0].total;
+  const mean = combined.reduce((a,b)=> a + b.total*b.prob, 0);
+
+  // BTTS — purement informatif, calculé à part, n'entre dans aucun calcul d'intervalle ci-dessus
+  let bttsProb = null;
+  if(dist2raw.length){
+    const yes = dist2raw.filter(r=>{
+      const [a,b] = r.label.split('-').map(Number);
+      return a>0 && b>0;
+    }).reduce((s,r)=>s+r.prob, 0);
+    bttsProb = yes;
+  }
+
+  lastComputed = { rMin, rMax, mode, mean, bttsProb };
+
+  document.getElementById('rMin').textContent = rMin;
+  document.getElementById('rMax').textContent = rMax;
+  document.getElementById('rSub').textContent = `couvre environ ${Math.round(cum*100)}% de la probabilité implicite combinée`;
+  document.getElementById('statMode').textContent = mode + ' but' + (mode>1?'s':'');
+  document.getElementById('statMean').textContent = mean.toFixed(2);
+
+  // Affichage BTTS + rappel de la cote 1-1 telle qu'entrée
+  const row11 = t2.find(r => r.label === '1-1');
+  const bttsEl = document.getElementById('statBtts');
+  const bttsNoteEl = document.getElementById('statBttsNote');
+  if(bttsProb !== null){
+    bttsEl.textContent = Math.round(bttsProb*100) + '%';
+    bttsNoteEl.textContent = row11
+      ? `calculé à partir du tableau "score exact" — cote 1-1 entrée : ${row11.odds}`
+      : 'calculé à partir du tableau "score exact"';
+  } else {
+    bttsEl.textContent = '–';
+    bttsNoteEl.textContent = 'remplis le tableau "score exact" pour calculer ça';
+  }
+
+  renderDist('distTotal', dist1.length ? dist1.map(d=>({label:d.total, prob:d.prob})).sort((a,b)=>a.label-b.label) : combined.map(d=>({label:d.total,prob:d.prob})));
+  renderDist('distScore', dist2.length ? dist2.map(d=>({label:d.total, prob:d.prob})) : []);
+
+  document.getElementById('results').classList.add('visible');
+  document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function renderDist(containerId, rows){
+  const container = document.getElementById(containerId);
+  if(rows.length === 0){
+    container.innerHTML = '<div class="panel-note">Pas de données pour ce tableau.</div>';
+    return;
+  }
+  const maxProb = Math.max(...rows.map(r=>r.prob));
+  const topLabel = rows.reduce((a,b)=> b.prob > a.prob ? b : a).label;
+  container.innerHTML = rows.map(r=>{
+    const pct = (r.prob*100).toFixed(1);
+    const width = maxProb > 0 ? (r.prob/maxProb*100) : 0;
+    const isTop = r.label === topLabel;
+    return `<div class="dist-row ${isTop?'top':''}">
+      <div class="n">${r.label}</div>
+      <div class="track"><div class="fill" style="width:${width}%"></div></div>
+      <div class="pct">${pct}%</div>
+    </div>`;
+  }).join('');
+}
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  initTable('table1', DEFAULT_TOTAL_LABELS);
+  initTable('table2', DEFAULT_SCORE_LABELS);
+  document.getElementById('results').classList.remove('visible');
+});
+
+// ---- Historique de fiabilité ----
+const HISTORY_KEY = 'goals-interval-history-v1';
+
+function loadHistory(){
+  try{
+    const raw = localStorage.getItem(HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+function saveHistory(hist){
+  try{ localStorage.setItem(HISTORY_KEY, JSON.stringify(hist)); }catch(e){}
+}
+
+document.getElementById('logBtn').addEventListener('click', ()=>{
+  const input = document.getElementById('finalScoreInput');
+  const logStatus = document.getElementById('logStatus');
+  const raw = input.value.trim();
+  const m = raw.match(/^(\d+)\s*[-–—]\s*(\d+)$/);
+  if(!m){
+    logStatus.textContent = 'Format attendu : ex. 2-3';
+    logStatus.style.color = 'var(--red-card)';
+    return;
+  }
+  if(!lastComputed){
+    logStatus.textContent = "Calcule d'abord les probabilités avant de noter le score.";
+    logStatus.style.color = 'var(--red-card)';
+    return;
+  }
+  const total = parseInt(m[1]) + parseInt(m[2]);
+  const inRange = total >= lastComputed.rMin && total <= lastComputed.rMax;
+  const bttsActual = parseInt(m[1]) > 0 && parseInt(m[2]) > 0;
+
+  const hist = loadHistory();
+  hist.push({
+    score: raw,
+    total,
+    rMin: lastComputed.rMin,
+    rMax: lastComputed.rMax,
+    inRange,
+    bttsProb: lastComputed.bttsProb,
+    bttsActual,
+    date: new Date().toISOString()
+  });
+  saveHistory(hist);
+
+  input.value = '';
+  logStatus.style.color = 'var(--gold)';
+  logStatus.textContent = "Ajouté à l'historique ✓";
+  renderHistory();
+  document.getElementById('historyPanel').classList.add('visible');
+});
+
+function renderHistory(){
+  const hist = loadHistory();
+  document.getElementById('histCount').textContent = hist.length;
+  const hits = hist.filter(h=>h.inRange).length;
+  document.getElementById('histHitRate').textContent = hist.length ? Math.round(hits/hist.length*100) + '%' : '–';
+
+  const tbody = document.querySelector('#historyTable tbody');
+  tbody.innerHTML = '';
+  [...hist].reverse().forEach((h, idx)=>{
+    const realIdx = hist.length - 1 - idx;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${h.score}</td>
+      <td>${h.total}</td>
+      <td>${h.rMin}–${h.rMax}</td>
+      <td><span class="tag ${h.inRange?'in':'out'}">${h.inRange ? 'dedans' : 'hors'}</span></td>
+      <td>${h.bttsProb != null ? Math.round(h.bttsProb*100)+'% → '+(h.bttsActual?'oui':'non') : '–'}</td>
+      <td><button class="del" data-idx="${realIdx}">×</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll('.del').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const hist2 = loadHistory();
+      hist2.splice(parseInt(btn.dataset.idx), 1);
+      saveHistory(hist2);
+      renderHistory();
+    });
+  });
+}
+
+document.getElementById('clearHistoryBtn').addEventListener('click', ()=>{
+  if(confirm("Effacer tout l'historique de matchs notés ? Cette action est irréversible.")){
+    saveHistory([]);
+    renderHistory();
+  }
+});
+
+// Init
+initTable('table1', DEFAULT_TOTAL_LABELS);
+initTable('table2', DEFAULT_SCORE_LABELS);
+if(loadHistory().length > 0){
+  renderHistory();
+  document.getElementById('historyPanel').classList.add('visible');
+}
+</script>
+
+</body>
+</html>
