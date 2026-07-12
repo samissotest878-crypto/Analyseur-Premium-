@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mr Palmer V1</title>
+<style>
+  :root{
+    --bg-0:#05100b;
+    --bg-1:#0a1a12;
+    --bg-2:#0e2117;
+    --line:#1e3a29;
+    --gold:#d4af37;
+    --gold-bright:#f2d675;
+    --gold-dim:#8a7333;
+    --text:#e8ecdf;
+    --text-dim:#9db0a0;
+    --green-ok:#4caf7d;
+    --red-warn:#c15a4b;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(212,175,55,0.08), transparent 60%),
+      radial-gradient(1000px 500px at 100% 0%, rgba(212,175,55,0.05), transparent 55%),
+      var(--bg-0);
+    color:var(--text);
+    font-family:"Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    padding:18px 12px 60px;
+    min-height:100vh;
+  }
+  .wrap{max-width:760px;margin:0 auto;}
+
+  /* ---------- Header ---------- */
+  .crest{
+    width:64px;height:64px;margin:0 auto 10px;
+    border:2px solid var(--gold);
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 35% 30%, #16321f, #081208 80%);
+    box-shadow:0 0 0 4px rgba(212,175,55,0.08), 0 0 18px rgba(212,175,55,0.25);
+    position:relative;
+  }
+  .crest::after{
+    content:"♛";
+    color:var(--gold-bright);
+    font-size:26px;
+    text-shadow:0 0 8px rgba(242,214,117,0.6);
+  }
+  header{text-align:center;margin-bottom:22px;}
+  .eyebrow{
+    letter-spacing:.22em;
+    font-size:11px;
+    color:var(--gold-dim);
+    text-transform:uppercase;
+    margin-bottom:6px;
+  }
+  h1{
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:30px;
+    line-height:1.15;
+    margin:0 0 6px;
+    background:linear-gradient(180deg,#f6e3a1,var(--gold) 55%,#a8853a);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    letter-spacing:.02em;
+  }
+  .subtitle{
+    font-size:14px;
+    color:var(--text-dim);
+    letter-spacing:.04em;
+    text-transform:uppercase;
+  }
+  .rule{
+    width:120px;height:2px;margin:14px auto;
+    background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  }
+
+  /* ---------- Cards ---------- */
+  .card{
+    background:linear-gradient(180deg,var(--bg-2),var(--bg-1));
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:18px 16px;
+    margin-bottom:16px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.35);
+  }
+  .card-title{
+    display:flex;align-items:center;gap:8px;
+    font-size:13px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--gold-bright);
+    margin-bottom:14px;
+    font-weight:600;
+  }
+  .card-title .dot{
+    width:6px;height:6px;border-radius:50%;
+    background:var(--gold);
+    box-shadow:0 0 6px var(--gold);
+  }
+
+  /* ---------- Inputs ---------- */
+  .field{margin-bottom:14px;}
+  .field:last-child{margin-bottom:0;}
+  .field label{
+    display:block;
+    font-size:13px;
+    color:var(--text);
+    margin-bottom:6px;
+  }
+  .field .hint{
+    display:block;
+    font-size:11.5px;
+    color:var(--text-dim);
+    margin-top:4px;
+  }
+  .field input{
+    width:100%;
+    padding:12px 14px;
+    background:#081208;
+    border:1px solid var(--line);
+    border-radius:9px;
+    color:var(--gold-bright);
+    font-size:18px;
+    font-weight:600;
+    letter-spacing:.02em;
+    outline:none;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  .field input::placeholder{color:#4d5f52;font-weight:400;font-size:15px;}
+  .field input:focus{
+    border-color:var(--gold);
+    box-shadow:0 0 0 3px rgba(212,175,55,0.15);
+  }
+
+  .formula-strip{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    flex-wrap:wrap;
+    font-size:13px;
+    color:var(--text-dim);
+    padding-top:14px;
+    margin-top:14px;
+    border-top:1px dashed var(--line);
+  }
+  .formula-strip b{color:var(--gold-bright);font-size:15px;}
+  .plus{color:var(--gold-dim);}
+
+  /* ---------- Result ---------- */
+  #resultCard{display:none;}
+  .indice-row{
+    display:flex;align-items:baseline;justify-content:space-between;
+    background:#081208;
+    border:1px solid var(--gold-dim);
+    border-radius:10px;
+    padding:14px 16px;
+    margin-bottom:14px;
+  }
+  .indice-row .label{font-size:13px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;}
+  .indice-row .value{font-size:30px;font-weight:700;color:var(--gold-bright);font-family:Georgia,serif;}
+
+  .result-line{
+    display:flex;gap:10px;
+    padding:10px 0;
+    border-bottom:1px solid var(--line);
+    align-items:flex-start;
+  }
+  .result-line:last-child{border-bottom:none;}
+  .result-line .icon{
+    width:22px;flex-shrink:0;text-align:center;
+    color:var(--gold);font-size:15px;margin-top:1px;
+  }
+  .result-line .content .k{
+    font-size:11.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px;
+  }
+  .result-line .content .v{font-size:15px;color:var(--text);line-height:1.5;}
+  .result-line .content .v b{color:var(--gold-bright);}
+
+  .scores-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+  .pill{
+    background:rgba(212,175,55,0.1);
+    border:1px solid var(--gold-dim);
+    color:var(--gold-bright);
+    padding:4px 10px;
+    border-radius:20px;
+    font-size:13.5px;
+    font-weight:600;
+    font-family:Georgia,serif;
+  }
+  .conseil-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+  .conseil-pill{
+    background:rgba(76,175,125,0.12);
+    border:1px solid #2f5f45;
+    color:#a9e3c4;
+    padding:4px 10px;
+    border-radius:20px;
+    font-size:13px;
+  }
+
+  .warn-box{
+    display:none;
+    background:rgba(193,90,75,0.1);
+    border:1px solid var(--red-warn);
+    color:#f0b6ab;
+    padding:12px 14px;
+    border-radius:10px;
+    font-size:13.5px;
+    line-height:1.5;
+    margin-bottom:16px;
+  }
+
+  /* ---------- Reference table ---------- */
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:12.5px;
+    min-width:640px;
+  }
+  th{
+    text-align:left;
+    color:var(--gold-bright);
+    text-transform:uppercase;
+    font-size:10.5px;
+    letter-spacing:.06em;
+    padding:8px 10px;
+    border-bottom:1px solid var(--gold-dim);
+    white-space:nowrap;
+  }
+  td{
+    padding:9px 10px;
+    border-bottom:1px solid var(--line);
+    color:var(--text-dim);
+    vertical-align:top;
+  }
+  td.indice{color:var(--gold-bright);font-weight:700;font-family:Georgia,serif;white-space:nowrap;}
+  td.lecture{color:var(--text);}
+  tr.active-row td{background:rgba(212,175,55,0.09);}
+  tr.active-row td.indice{color:var(--gold-bright);}
+
+  .note{
+    text-align:center;
+    font-size:11.5px;
+    color:var(--text-dim);
+    margin-top:20px;
+    padding:0 10px;
+    line-height:1.5;
+  }
+  .note b{color:var(--gold-dim);}
+
+  button#resetBtn{
+    width:100%;
+    padding:12px;
+    margin-top:4px;
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--text-dim);
+    border-radius:9px;
+    font-size:13px;
+    cursor:pointer;
+  }
+  button#resetBtn:active{border-color:var(--gold-dim);color:var(--gold-bright);}
+
+  #addHistoryBtn{
+    width:100%;
+    margin-top:16px;
+    padding:12px;
+    background:linear-gradient(180deg, rgba(212,175,55,0.16), rgba(212,175,55,0.06));
+    border:1px solid var(--gold-dim);
+    color:var(--gold-bright);
+    border-radius:9px;
+    font-size:13.5px;
+    font-weight:600;
+    letter-spacing:.03em;
+    cursor:pointer;
+  }
+  #addHistoryBtn:active{border-color:var(--gold);}
+
+  /* ---------- History ---------- */
+  .hist-toolbar{
+    display:flex;align-items:center;justify-content:space-between;
+    flex-wrap:wrap;gap:8px;
+    margin-bottom:14px;
+    padding-bottom:12px;
+    border-bottom:1px dashed var(--line);
+  }
+  .hist-toolbar #histCount{font-size:12px;color:var(--text-dim);}
+  .hist-actions{display:flex;gap:6px;flex-wrap:wrap;}
+  .mini-btn{
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--text-dim);
+    padding:6px 10px;
+    border-radius:7px;
+    font-size:11.5px;
+    cursor:pointer;
+  }
+  .mini-btn:active{border-color:var(--gold-dim);color:var(--gold-bright);}
+  .mini-btn.danger:active{border-color:var(--red-warn);color:#f0b6ab;}
+
+  .hist-empty{
+    text-align:center;
+    font-size:12.5px;
+    color:var(--text-dim);
+    padding:18px 10px;
+    line-height:1.5;
+  }
+
+  .hist-item{
+    background:#081208;
+    border:1px solid var(--line);
+    border-radius:11px;
+    padding:12px 14px;
+    margin-bottom:10px;
+  }
+  .hist-item-top{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:8px;
+  }
+  .hist-item-indice{
+    font-family:Georgia,serif;
+    font-size:19px;
+    font-weight:700;
+    color:var(--gold-bright);
+  }
+  .hist-item-date{font-size:10.5px;color:var(--text-dim);}
+  .hist-item-lecture{font-size:13px;color:var(--text);margin-bottom:8px;}
+  .hist-item-scores{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
+  .hist-item-scores .pill{font-size:12px;padding:3px 8px;}
+
+  .hist-actual-row{
+    display:flex;align-items:center;gap:8px;
+    padding-top:10px;
+    border-top:1px solid var(--line);
+  }
+  .hist-actual-row label{font-size:11.5px;color:var(--text-dim);white-space:nowrap;}
+  .hist-actual-row input{
+    flex:1;
+    min-width:0;
+    padding:8px 10px;
+    background:#05100b;
+    border:1px solid var(--line);
+    border-radius:7px;
+    color:var(--gold-bright);
+    font-size:14px;
+    font-weight:600;
+    outline:none;
+  }
+  .hist-actual-row input:focus{border-color:var(--gold);}
+  .hist-actual-row button{
+    background:rgba(212,175,55,0.1);
+    border:1px solid var(--gold-dim);
+    color:var(--gold-bright);
+    padding:8px 12px;
+    border-radius:7px;
+    font-size:12px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .hist-item-del{
+    background:none;border:none;
+    color:var(--text-dim);
+    font-size:16px;
+    cursor:pointer;
+    padding:0 0 0 8px;
+    line-height:1;
+  }
+  .hist-item-del:active{color:var(--red-warn);}
+
+  .hist-status{
+    margin-top:8px;
+    font-size:12.5px;
+    padding:6px 10px;
+    border-radius:7px;
+    display:none;
+  }
+  .hist-status.match{
+    display:block;
+    background:rgba(76,175,125,0.12);
+    border:1px solid #2f5f45;
+    color:#a9e3c4;
+  }
+  .hist-status.nomatch{
+    display:block;
+    background:rgba(193,90,75,0.1);
+    border:1px solid var(--red-warn);
+    color:#f0b6ab;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="crest"></div>
+    <div class="eyebrow">Savoirs Ancestraux · Outil d'analyse</div>
+    <h1>Mr Palmer V1</h1>
+    <div class="subtitle">Favori + Handicap (-1) + Over 2.5</div>
+    <div class="rule"></div>
+  </header>
+
+  <div class="card">
+    <div class="card-title"><span class="dot"></span>Cotes du bookmaker</div>
+
+    <div class="field">
+      <label for="coteFavori">Cote du favori (1X2)</label>
+      <input type="number" inputmode="decimal" step="0.01" min="1" id="coteFavori" placeholder="Ex. 1.60">
+    </div>
+
+    <div class="field">
+      <label for="coteHandicap">Cote de l'handicap (-1) du favori</label>
+      <input type="number" inputmode="decimal" step="0.01" min="1" id="coteHandicap" placeholder="Ex. 2.15">
+    </div>
+
+    <div class="field">
+      <label for="coteOver">Cote Over 2.5 buts</label>
+      <input type="number" inputmode="decimal" step="0.01" min="1" id="coteOver" placeholder="Ex. 1.90">
+    </div>
+
+    <div class="formula-strip">
+      <span>Indice Nova =</span>
+      <b id="sumDisplay">—</b>
+    </div>
+  </div>
+
+  <div class="warn-box" id="warnBox"></div>
+
+  <div class="card" id="resultCard">
+    <div class="card-title"><span class="dot"></span>Résultat de l'analyse</div>
+
+    <div class="indice-row">
+      <span class="label">Indice Nova</span>
+      <span class="value" id="indiceValue">0.00</span>
+    </div>
+
+    <div class="result-line">
+      <div class="icon">◆</div>
+      <div class="content">
+        <div class="k">Lecture</div>
+        <div class="v" id="lectureValue">—</div>
+      </div>
+    </div>
+
+    <div class="result-line">
+      <div class="icon">◆</div>
+      <div class="content">
+        <div class="k">Scores exacts à analyser</div>
+        <div class="v"><div class="scores-pills" id="scoresValue"></div></div>
+      </div>
+    </div>
+
+    <div class="result-line">
+      <div class="icon">◆</div>
+      <div class="content">
+        <div class="k">Conseils de paris</div>
+        <div class="v"><div class="conseil-pills" id="conseilsValue"></div></div>
+      </div>
+    </div>
+
+    <button id="addHistoryBtn">+ Ajouter cette analyse à l'historique</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot"></span>Table de référence complète</div>
+    <div class="table-wrap">
+      <table id="refTable">
+        <thead>
+          <tr>
+            <th>Indice</th>
+            <th>Lecture</th>
+            <th>Scores exacts</th>
+            <th>Conseils</th>
+          </tr>
+        </thead>
+        <tbody id="refTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <button id="resetBtn">Réinitialiser les cotes</button>
+
+  <div class="card">
+    <div class="card-title"><span class="dot"></span>Historique des analyses</div>
+    <div class="hist-toolbar">
+      <span id="histCount">0 analyse enregistrée</span>
+      <div class="hist-actions">
+        <button id="exportBtn" class="mini-btn">Exporter</button>
+        <button id="importBtn" class="mini-btn">Importer</button>
+        <input type="file" id="importFile" accept="application/json" style="display:none;">
+        <button id="clearHistBtn" class="mini-btn danger">Tout effacer</button>
+      </div>
+    </div>
+    <div id="histList"></div>
+    <div id="histEmpty" class="hist-empty">Aucune analyse enregistrée pour l'instant. Calcule un indice ci-dessus puis appuie sur « Ajouter cette analyse à l'historique ».</div>
+  </div>
+
+  <div class="note">
+    <b>Important :</b> cette matrice est une hypothèse de travail. Les intervalles et scénarios doivent être testés et ajustés sur un grand nombre de matchs.
+  </div>
+
+</div>
+
+<script>
+  const intervals = [
+    {min:4.20, max:4.49, lecture:"Favori ultra dominant", scores:["0-0","1-0","2-0"], conseils:["Under 2.5","Victoire favori","Handicap -1"]},
+    {min:4.50, max:4.79, lecture:"Favori très fort", scores:["2-0","2-1","3-0"], conseils:["Victoire favori","Over 1.5","Handicap -1"]},
+    {min:4.80, max:5.09, lecture:"Favori solide", scores:["2-1","3-1","3-0"], conseils:["Victoire favori","Over 2.5","Favori 1er but"]},
+    {min:5.10, max:5.39, lecture:"Match offensif", scores:["2-1","3-1","2-2"], conseils:["Over 2.5","BTTS Oui"]},
+    {min:5.40, max:5.69, lecture:"Match équilibré", scores:["1-1","2-2","3-2"], conseils:["BTTS Oui","Over 2.5"]},
+    {min:5.70, max:5.99, lecture:"Match très ouvert", scores:["3-2","3-3","4-2"], conseils:["Over 3.5","BTTS Oui"]},
+    {min:6.00, max:6.29, lecture:"Beaucoup de buts", scores:["4-2","4-3","5-2"], conseils:["Over 3.5","Plus de 4 buts"]},
+    {min:6.30, max:6.59, lecture:"Très forte intensité", scores:["4-3","5-3","5-4"], conseils:["Over 4.5","BTTS Oui"]},
+    {min:6.60, max:6.89, lecture:"Match imprévisible", scores:["0-0","1-1","2-2","3-3"], conseils:["Double Chance","Under 4.5"]},
+    {min:6.90, max:7.19, lecture:"Équilibre extrême", scores:["1-2","2-3","3-4"], conseils:["BTTS Oui","Over 2.5"]},
+    {min:7.20, max:7.49, lecture:"Outsider dangereux", scores:["0-1","1-2","2-3"], conseils:["Double Chance X2","Handicap +1"]},
+    {min:7.50, max:Infinity, lecture:"Match totalement ouvert", scores:["0-0","0-1","1-1","2-2","3-3","4-4"], conseils:["Prudence","Miser sur plusieurs scénarios"]}
+  ];
+
+  const favoriInput = document.getElementById('coteFavori');
+  const handicapInput = document.getElementById('coteHandicap');
+  const overInput = document.getElementById('coteOver');
+  const sumDisplay = document.getElementById('sumDisplay');
+  const resultCard = document.getElementById('resultCard');
+  const warnBox = document.getElementById('warnBox');
+  const indiceValue = document.getElementById('indiceValue');
+  const lectureValue = document.getElementById('lectureValue');
+  const scoresValue = document.getElementById('scoresValue');
+  const conseilsValue = document.getElementById('conseilsValue');
+  const refTableBody = document.getElementById('refTableBody');
+
+  function fmtRange(iv){
+    if(iv.max === Infinity) return iv.min.toFixed(2) + " et +";
+    return iv.min.toFixed(2) + " – " + iv.max.toFixed(2);
+  }
+
+  function buildTable(activeIv){
+    refTableBody.innerHTML = "";
+    intervals.forEach(iv=>{
+      const tr = document.createElement('tr');
+      if(activeIv === iv) tr.classList.add('active-row');
+      tr.innerHTML = `
+        <td class="indice">${fmtRange(iv)}</td>
+        <td class="lecture">${iv.lecture}</td>
+        <td>${iv.scores.join(' • ')}</td>
+        <td>${iv.conseils.join(' • ')}</td>
+      `;
+      refTableBody.appendChild(tr);
+    });
+  }
+
+  function findInterval(sum){
+    return intervals.find(iv => sum >= iv.min && sum <= iv.max);
+  }
+
+  function update(){
+    const a = parseFloat(favoriInput.value);
+    const b = parseFloat(handicapInput.value);
+    const c = parseFloat(overInput.value);
+
+    if(isNaN(a) || isNaN(b) || isNaN(c)){
+      sumDisplay.textContent = "—";
+      resultCard.style.display = "none";
+      warnBox.style.display = "none";
+      buildTable(null);
+      return;
+    }
+
+    const sum = a + b + c;
+    sumDisplay.textContent = sum.toFixed(2);
+
+    const iv = findInterval(sum);
+
+    if(!iv){
+      resultCard.style.display = "none";
+      warnBox.style.display = "block";
+      if(sum < 4.20){
+        warnBox.textContent = `Indice Nova ${sum.toFixed(2)} — en dessous de l'intervalle couvert (4.20). Ce scénario n'est pas répertorié dans la matrice ; prudence.`;
+      } else {
+        warnBox.textContent = `Indice Nova ${sum.toFixed(2)} — aucun intervalle correspondant trouvé.`;
+      }
+      buildTable(null);
+      return;
+    }
+
+    warnBox.style.display = "none";
+    resultCard.style.display = "block";
+    indiceValue.textContent = sum.toFixed(2);
+    lectureValue.innerHTML = `<b>${iv.lecture}</b>`;
+    scoresValue.innerHTML = iv.scores.map(s => `<span class="pill">${s}</span>`).join('');
+    conseilsValue.innerHTML = iv.conseils.map(c => `<span class="conseil-pill">${c}</span>`).join('');
+
+    buildTable(iv);
+  }
+
+  [favoriInput, handicapInput, overInput].forEach(inp=>{
+    inp.addEventListener('input', update);
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', ()=>{
+    favoriInput.value = "";
+    handicapInput.value = "";
+    overInput.value = "";
+    update();
+    favoriInput.focus();
+  });
+
+  buildTable(null);
+
+  /* ================= HISTORIQUE ================= */
+  const HIST_KEY = "mrpalmer_v1_history";
+  let history = [];
+
+  function loadHistory(){
+    try{
+      const raw = localStorage.getItem(HIST_KEY);
+      history = raw ? JSON.parse(raw) : [];
+    }catch(e){ history = []; }
+  }
+
+  function saveHistory(){
+    try{
+      localStorage.setItem(HIST_KEY, JSON.stringify(history));
+    }catch(e){ /* stockage indisponible, on continue en mémoire */ }
+  }
+
+  function fmtDate(ts){
+    const d = new Date(ts);
+    const pad = n => String(n).padStart(2,'0');
+    return `${pad(d.getDate())}/${pad(d.getMonth()+1)} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  function renderHistory(){
+    const list = document.getElementById('histList');
+    const empty = document.getElementById('histEmpty');
+    const count = document.getElementById('histCount');
+
+    count.textContent = history.length + (history.length > 1 ? " analyses enregistrées" : " analyse enregistrée");
+
+    if(history.length === 0){
+      list.innerHTML = "";
+      empty.style.display = "block";
+      return;
+    }
+    empty.style.display = "none";
+
+    list.innerHTML = history.slice().reverse().map(entry=>{
+      const scoresHtml = entry.scores.map(s=>`<span class="pill">${s}</span>`).join('');
+      let statusHtml = "";
+      if(entry.actualScore){
+        const isMatch = entry.scores.includes(entry.actualScore);
+        statusHtml = `<div class="hist-status ${isMatch ? 'match':'nomatch'}">
+          ${isMatch ? '✅ Le score exact correspond à la prédiction ('+entry.actualScore+')' : '❌ Le score final ('+entry.actualScore+') ne correspond à aucun scénario prédit'}
+        </div>`;
+      }
+      return `
+        <div class="hist-item" data-id="${entry.id}">
+          <div class="hist-item-top">
+            <span class="hist-item-indice">${entry.indice.toFixed(2)}</span>
+            <span class="hist-item-date">${fmtDate(entry.ts)}
+              <button class="hist-item-del" data-del="${entry.id}" title="Supprimer">✕</button>
+            </span>
+          </div>
+          <div class="hist-item-lecture">${entry.lecture} · cotes ${entry.a.toFixed(2)} + ${entry.b.toFixed(2)} + ${entry.c.toFixed(2)}</div>
+          <div class="hist-item-scores">${scoresHtml}</div>
+          <div class="hist-actual-row">
+            <label>Score final :</label>
+            <input type="text" placeholder="Ex. 2-1" value="${entry.actualScore || ''}" data-actual="${entry.id}">
+            <button data-validate="${entry.id}">Valider</button>
+          </div>
+          ${statusHtml}
+        </div>
+      `;
+    }).join('');
+
+    list.querySelectorAll('[data-del]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const id = btn.getAttribute('data-del');
+        history = history.filter(e => e.id !== id);
+        saveHistory();
+        renderHistory();
+      });
+    });
+
+    list.querySelectorAll('[data-validate]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const id = btn.getAttribute('data-validate');
+        const input = list.querySelector(`[data-actual="${id}"]`);
+        const val = (input.value || '').trim();
+        const entry = history.find(e => e.id === id);
+        if(entry){
+          entry.actualScore = val;
+          saveHistory();
+          renderHistory();
+        }
+      });
+    });
+  }
+
+  document.getElementById('addHistoryBtn').addEventListener('click', ()=>{
+    const a = parseFloat(favoriInput.value);
+    const b = parseFloat(handicapInput.value);
+    const c = parseFloat(overInput.value);
+    if(isNaN(a) || isNaN(b) || isNaN(c)) return;
+    const sum = a + b + c;
+    const iv = findInterval(sum);
+    if(!iv) return;
+
+    history.push({
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2,7),
+      ts: Date.now(),
+      a, b, c,
+      indice: sum,
+      lecture: iv.lecture,
+      scores: iv.scores,
+      conseils: iv.conseils,
+      actualScore: ""
+    });
+    saveHistory();
+    renderHistory();
+
+    const btn = document.getElementById('addHistoryBtn');
+    const original = btn.textContent;
+    btn.textContent = "✓ Ajouté à l'historique";
+    setTimeout(()=>{ btn.textContent = original; }, 1500);
+  });
+
+  document.getElementById('clearHistBtn').addEventListener('click', ()=>{
+    if(history.length === 0) return;
+    if(confirm("Effacer tout l'historique des analyses ? Cette action est irréversible.")){
+      history = [];
+      saveHistory();
+      renderHistory();
+    }
+  });
+
+  document.getElementById('exportBtn').addEventListener('click', ()=>{
+    if(history.length === 0) return;
+    const blob = new Blob([JSON.stringify(history, null, 2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const d = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    a.href = url;
+    a.download = `mrpalmer_v1_historique_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById('importBtn').addEventListener('click', ()=>{
+    document.getElementById('importFile').click();
+  });
+
+  document.getElementById('importFile').addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev)=>{
+      try{
+        const imported = JSON.parse(ev.target.result);
+        if(Array.isArray(imported)){
+          const existingIds = new Set(history.map(h=>h.id));
+          imported.forEach(item=>{
+            if(item && item.id && !existingIds.has(item.id)){
+              history.push(item);
+            }
+          });
+          history.sort((x,y)=> x.ts - y.ts);
+          saveHistory();
+          renderHistory();
+        }
+      }catch(err){
+        alert("Fichier invalide, import impossible.");
+      }
+      e.target.value = "";
+    };
+    reader.readAsText(file);
+  });
+
+  loadHistory();
+  renderHistory();
+</script>
+</body>
+</html>
