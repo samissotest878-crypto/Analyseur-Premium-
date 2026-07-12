@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Analyseur Temporel — Buts Virtuels</title>
+<style>
+  :root{
+    --bg:#0e1512;
+    --panel:#161f1a;
+    --panel-2:#1c2620;
+    --border:#2a362f;
+    --green:#2f9e5c;
+    --green-dim:#1f6b40;
+    --gold:#d4af37;
+    --gold-dim:#8a742a;
+    --text:#e9ede9;
+    --text-dim:#8fa093;
+    --red:#c85454;
+    --yellow:#c8a23f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    padding-bottom:60px;
+  }
+  header{
+    padding:18px 16px 14px;
+    border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg,#132018,#0e1512);
+    position:sticky;
+    top:0;
+    z-index:5;
+  }
+  header h1{
+    margin:0 0 2px;
+    font-size:1.25rem;
+    letter-spacing:0.3px;
+  }
+  header h1 span{color:var(--gold);}
+  header p{margin:0;color:var(--text-dim);font-size:0.8rem;}
+
+  .tabs{
+    display:flex;
+    gap:6px;
+    padding:10px 16px 0;
+    background:var(--bg);
+    border-bottom:1px solid var(--border);
+    overflow-x:auto;
+  }
+  .tab{
+    padding:9px 14px;
+    font-size:0.85rem;
+    color:var(--text-dim);
+    border:1px solid var(--border);
+    border-bottom:none;
+    border-radius:8px 8px 0 0;
+    background:var(--panel);
+    white-space:nowrap;
+  }
+  .tab.active{color:var(--gold);border-color:var(--gold-dim);background:var(--panel-2);}
+
+  main{padding:16px;max-width:720px;margin:0 auto;}
+  section{display:none;}
+  section.active{display:block;}
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px;
+    margin-bottom:14px;
+  }
+  .card h2{margin:0 0 10px;font-size:0.95rem;color:var(--gold);font-weight:600;}
+  .card h3{margin:14px 0 8px;font-size:0.85rem;color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
+
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+  .field{flex:1;min-width:100px;display:flex;flex-direction:column;gap:4px;}
+  label{font-size:0.72rem;color:var(--text-dim);}
+  input,select{
+    background:var(--panel-2);
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:9px 8px;
+    border-radius:8px;
+    font-size:0.95rem;
+    width:100%;
+  }
+  input:focus,select:focus{outline:1px solid var(--gold-dim);}
+
+  select{
+    -webkit-appearance:none;
+    -moz-appearance:none;
+    appearance:none;
+    border:2px solid var(--gold-dim);
+    background-color:var(--panel-2);
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23d4af37'><path d='M5.5 7.5l4.5 5 4.5-5z'/></svg>");
+    background-repeat:no-repeat;
+    background-position:right 10px center;
+    background-size:16px;
+    padding-right:32px;
+    font-weight:600;
+    min-height:42px;
+  }
+  select option{
+    background:#1c2620;
+    color:#e9ede9;
+  }
+
+  button{
+    background:var(--green-dim);
+    color:#fff;
+    border:none;
+    padding:10px 14px;
+    border-radius:8px;
+    font-size:0.88rem;
+    font-weight:600;
+    cursor:pointer;
+  }
+  button:active{background:var(--green);}
+  button.secondary{background:var(--panel-2);color:var(--text-dim);border:1px solid var(--border);}
+  button.danger{background:#3a1f1f;color:#e08080;border:1px solid #4a2929;}
+  button.gold{background:var(--gold-dim);color:#1a1508;}
+  .btn-row{display:flex;gap:8px;flex-wrap:wrap;}
+
+  table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+  th,td{padding:7px 6px;text-align:left;border-bottom:1px solid var(--border);}
+  th{color:var(--text-dim);font-weight:600;font-size:0.72rem;text-transform:uppercase;}
+  tr:last-child td{border-bottom:none;}
+
+  .badge{
+    display:inline-block;
+    padding:2px 7px;
+    border-radius:20px;
+    font-size:0.68rem;
+    font-weight:700;
+  }
+  .badge.ok{background:rgba(47,158,92,0.2);color:#5fd889;}
+  .badge.warn{background:rgba(200,84,84,0.15);color:#e08080;}
+
+  .pct{font-weight:700;}
+  .pct.high{color:#5fd889;}
+  .pct.mid{color:var(--yellow);}
+  .pct.low{color:var(--text-dim);}
+
+  .empty{color:var(--text-dim);font-size:0.85rem;text-align:center;padding:20px 0;}
+
+  .slot-card{
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:10px 12px;
+    margin-bottom:10px;
+    background:var(--panel-2);
+  }
+  .slot-card.reliable{border-color:var(--green-dim);}
+  .slot-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  .slot-time{font-weight:700;font-size:0.95rem;}
+  .slot-n{font-size:0.75rem;color:var(--text-dim);}
+  .suggestion{
+    margin-top:8px;
+    padding:8px 10px;
+    border-radius:8px;
+    background:rgba(212,175,55,0.08);
+    border:1px solid var(--gold-dim);
+    font-size:0.82rem;
+  }
+  .suggestion b{color:var(--gold);}
+  .suggestion.none{background:transparent;border:1px dashed var(--border);color:var(--text-dim);}
+
+  textarea{
+    width:100%;
+    min-height:110px;
+    background:var(--panel-2);
+    border:1px solid var(--border);
+    color:var(--text);
+    border-radius:8px;
+    padding:8px;
+    font-family:monospace;
+    font-size:0.75rem;
+  }
+  .hint{font-size:0.72rem;color:var(--text-dim);margin-top:4px;line-height:1.4;}
+  .del{background:none;border:none;color:#c85454;font-size:1rem;padding:2px 6px;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Analyseur Temporel <span>⚽ Buts Virtuels</span></h1>
+  <p>Championnat, heure, buts → détecte les créneaux à Plus / Moins de buts</p>
+</header>
+
+<div class="tabs">
+  <div class="tab active" data-tab="saisie">Saisie</div>
+  <div class="tab" data-tab="matchs">Matchs</div>
+  <div class="tab" data-tab="analyse">Analyse</div>
+  <div class="tab" data-tab="donnees">Données</div>
+</div>
+
+<main>
+
+  <!-- SAISIE -->
+  <section id="saisie" class="active">
+    <div class="card">
+      <h2>Championnat actif</h2>
+      <div class="row">
+        <div class="field" style="flex:2">
+          <label>Sélectionner</label>
+          <select id="champSelect"></select>
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <button class="secondary" id="newChampBtn" type="button">+ Nouveau</button>
+        </div>
+      </div>
+      <div class="row" id="newChampRow" style="display:none;">
+        <div class="field" style="flex:2">
+          <label>Nom du nouveau championnat</label>
+          <input type="text" id="newChampInput" placeholder="ex: Angleterre, Espagne...">
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <button id="confirmChampBtn" type="button">Valider</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Ajouter un résultat</h2>
+      <div class="row">
+        <div class="field">
+          <label>Date</label>
+          <input type="date" id="mDate">
+        </div>
+        <div class="field">
+          <label>Heure (24h)</label>
+          <input type="time" id="mHeure" step="60">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Buts domicile</label>
+          <input type="number" id="mDom" min="0" step="1" value="0">
+        </div>
+        <div class="field">
+          <label>Buts extérieur</label>
+          <input type="number" id="mExt" min="0" step="1" value="0">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button id="addMatchBtn" type="button">Ajouter le match</button>
+      </div>
+      <p class="hint">Ajoute l'heure exacte affichée par la plateforme (ex: 14:03). Le regroupement par tranche se fait plus tard, dans l'onglet Analyse — tu choisis la taille de tranche à chaque fois.</p>
+    </div>
+  </section>
+
+  <!-- MATCHS -->
+  <section id="matchs">
+    <div class="card">
+      <h2 id="matchsTitle">Historique</h2>
+      <div id="matchsTable"></div>
+    </div>
+  </section>
+
+  <!-- ANALYSE -->
+  <section id="analyse">
+    <div class="card">
+      <h2>Paramètres d'analyse</h2>
+      <div class="row">
+        <div class="field">
+          <label>Taille de tranche (minutes)</label>
+          <input type="number" id="slotSize" min="1" max="1440" value="30">
+        </div>
+        <div class="field">
+          <label>Seuil minimum de matchs (fiable)</label>
+          <input type="number" id="minSample" min="1" value="15">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Confiance minimum pour suggestion (%)</label>
+          <input type="number" id="minConf" min="50" max="100" value="65">
+        </div>
+        <div class="field">
+          <label>Affichage</label>
+          <select id="filterReliable">
+            <option value="all">Toutes les tranches</option>
+            <option value="reliable">Tranches fiables uniquement</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Jours distincts minimum (fiabilité)</label>
+          <input type="number" id="minDays" min="1" value="1">
+        </div>
+        <div class="field">
+          <label>Filtrer par date</label>
+          <select id="dateFilter">
+            <option value="all">Toutes les dates</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button id="analyzeBtn" type="button">Analyser</button>
+      </div>
+      <p class="hint">Le seuil "fiable" est réglable ici : c'est toi qui décides à partir de combien de matchs — ET de combien de jours différents — un créneau devient exploitable. Un 100% obtenu sur un seul jour n'a pas la même valeur que le même 100% confirmé sur plusieurs jours. Utilise "Filtrer par date" pour comparer un jour précis au reste et voir si le pattern se répète.</p>
+    </div>
+
+    <div id="analysisResults"></div>
+  </section>
+
+  <!-- DONNEES -->
+  <section id="donnees">
+    <div class="card">
+      <h2>Sauvegarde locale</h2>
+      <p class="hint">Les données restent enregistrées dans ce fichier HTML tant que tu ne vides pas le cache du navigateur. Fais un export régulier pour ne rien perdre, surtout si tu changes de téléphone ou d'appli.</p>
+      <div class="btn-row">
+        <button class="gold" id="exportBtn" type="button">Exporter (texte)</button>
+        <button class="secondary" id="copyBtn" type="button">Copier</button>
+      </div>
+      <textarea id="exportArea" readonly placeholder="Le texte d'export apparaîtra ici..."></textarea>
+    </div>
+    <div class="card">
+      <h2>Importer</h2>
+
+      <textarea id="importArea" placeholder="Colle ici un export précédent..."></textarea>
+      <div class="btn-row" style="margin-top:8px;">
+        <button id="importBtn" type="button">Importer (fusionner)</button>
+        <button class="danger" id="wipeBtn" type="button">Tout effacer</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+const STORAGE_KEY = 'atbv_data_v1';
+let state = load();
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return { championships: { "Italie": [] }, active: "Italie" };
+}
+function save(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+}
+
+// ---------- Tabs ----------
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.tab).classList.add('active');
+    if(tab.dataset.tab==='matchs') renderMatchTable();
+    if(tab.dataset.tab==='analyse') populateDateFilter();
+  });
+});
+
+// ---------- Championships ----------
+function renderChampSelect(){
+  const sel = document.getElementById('champSelect');
+  sel.innerHTML = '';
+  Object.keys(state.championships).forEach(name=>{
+    const opt = document.createElement('option');
+    opt.value = name; opt.textContent = name;
+    if(name===state.active) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+document.getElementById('champSelect').addEventListener('change', e=>{
+  state.active = e.target.value;
+  save();
+  populateDateFilter();
+});
+document.getElementById('newChampBtn').addEventListener('click', ()=>{
+  const row = document.getElementById('newChampRow');
+  const isHidden = row.style.display === 'none';
+  row.style.display = isHidden ? 'flex' : 'none';
+  if(isHidden){
+    const input = document.getElementById('newChampInput');
+    input.value = '';
+    input.focus();
+  }
+});
+function confirmNewChamp(){
+  const input = document.getElementById('newChampInput');
+  const clean = input.value.trim();
+  if(!clean){ input.focus(); return; }
+  if(!state.championships[clean]) state.championships[clean] = [];
+  state.active = clean;
+  save();
+  renderChampSelect();
+  renderMatchTable();
+  document.getElementById('newChampRow').style.display = 'none';
+  input.value = '';
+}
+document.getElementById('confirmChampBtn').addEventListener('click', confirmNewChamp);
+document.getElementById('newChampInput').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter'){ e.preventDefault(); confirmNewChamp(); }
+});
+
+// ---------- Add match ----------
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+document.getElementById('mDate').value = todayStr();
+
+document.getElementById('addMatchBtn').addEventListener('click', ()=>{
+  const date = document.getElementById('mDate').value || todayStr();
+  const heure = document.getElementById('mHeure').value;
+  const dom = parseInt(document.getElementById('mDom').value || '0', 10);
+  const ext = parseInt(document.getElementById('mExt').value || '0', 10);
+  if(!heure){ alert('Indique une heure.'); return; }
+  const match = { id: Date.now()+Math.random().toString(16).slice(2), date, heure, dom, ext };
+  if(!state.championships[state.active]) state.championships[state.active] = [];
+  state.championships[state.active].push(match);
+  save();
+  document.getElementById('mDom').value = 0;
+  document.getElementById('mExt').value = 0;
+  renderMatchTable();
+});
+
+// ---------- Match table ----------
+function renderMatchTable(){
+  renderChampSelect();
+  const list = (state.championships[state.active] || []).slice().sort((a,b)=>{
+    const da = a.date || '', db = b.date || '';
+    if(da!==db) return da.localeCompare(db);
+    return a.heure.localeCompare(b.heure);
+  });
+  document.getElementById('matchsTitle').textContent = `Historique — ${state.active} (${list.length} matchs)`;
+  const container = document.getElementById('matchsTable');
+  if(list.length===0){
+    container.innerHTML = '<div class="empty">Aucun match enregistré pour ce championnat.</div>';
+    return;
+  }
+  let html = '<table><thead><tr><th>Date</th><th>Heure</th><th>Score</th><th>Total</th><th></th></tr></thead><tbody>';
+  list.forEach(m=>{
+    html += `<tr><td>${m.date || '—'}</td><td>${m.heure}</td><td>${m.dom} - ${m.ext}</td><td>${m.dom+m.ext}</td><td><button class="del" data-id="${m.id}">✕</button></td></tr>`;
+  });
+  html += '</tbody></table>';
+  container.innerHTML = html;
+  container.querySelectorAll('.del').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.dataset.id;
+      state.championships[state.active] = state.championships[state.active].filter(m=>m.id!==id);
+      save();
+      renderMatchTable();
+    });
+  });
+}
+
+// ---------- Analysis ----------
+function timeToMinutes(t){
+  const [h,m] = t.split(':').map(Number);
+  return h*60+m;
+}
+function minutesToTime(mins){
+  mins = ((mins%1440)+1440)%1440;
+  const h = Math.floor(mins/60).toString().padStart(2,'0');
+  const m = (mins%60).toString().padStart(2,'0');
+  return `${h}:${m}`;
+}
+
+document.getElementById('analyzeBtn').addEventListener('click', runAnalysis);
+document.getElementById('filterReliable').addEventListener('change', runAnalysis);
+
+function populateDateFilter(){
+  const sel = document.getElementById('dateFilter');
+  const current = sel.value;
+  const list = state.championships[state.active] || [];
+  const dates = Array.from(new Set(list.map(m=>m.date).filter(Boolean))).sort();
+  sel.innerHTML = '<option value="all">Toutes les dates</option>';
+  dates.forEach(d=>{
+    const opt = document.createElement('option');
+    opt.value = d; opt.textContent = d;
+    sel.appendChild(opt);
+  });
+  if(dates.includes(current)) sel.value = current;
+}
+
+const LINES = [1.5,2.5,3.5,4.5];
+
+// Calcule toutes les stats (lignes + BTTS + suggestion) pour un groupe de matchs
+function computeStats(matches, minSample, minConf, minDays){
+  const n = matches.length;
+  const totals = matches.map(m=>m.dom+m.ext);
+  const avg = n ? totals.reduce((a,b)=>a+b,0)/n : 0;
+  const lineStats = LINES.map(line=>{
+    const overN = totals.filter(t=>t>line).length;
+    const pctOver = n ? (overN/n)*100 : 0;
+    const pctUnder = 100-pctOver;
+    return { line, pctOver, pctUnder };
+  });
+  const bttsYesN = matches.filter(m=>m.dom>0 && m.ext>0).length;
+  const pctBttsYes = n ? (bttsYesN/n)*100 : 0;
+  const pctBttsNo = 100-pctBttsYes;
+  const daysCount = new Set(matches.map(m=>m.date || '?')).size;
+  const reliable = n>=minSample && daysCount>=minDays;
+
+  let best = null;
+  if(reliable){
+    lineStats.forEach(ls=>{
+      if(ls.pctOver>=minConf && (!best || ls.pctOver>best.pct)){
+        best = { type:'line', dir:'Plus de', label: ls.line+' buts', pct: ls.pctOver };
+      }
+      if(ls.pctUnder>=minConf && (!best || ls.pctUnder>best.pct)){
+        best = { type:'line', dir:'Moins de', label: ls.line+' buts', pct: ls.pctUnder };
+      }
+    });
+    if(pctBttsYes>=minConf && (!best || pctBttsYes>best.pct)){
+      best = { type:'btts', dir:'BTTS', label:'Oui (les 2 marquent)', pct: pctBttsYes };
+    }
+    if(pctBttsNo>=minConf && (!best || pctBttsNo>best.pct)){
+      best = { type:'btts', dir:'BTTS', label:'Non', pct: pctBttsNo };
+    }
+  }
+  return { n, avg, lineStats, pctBttsYes, pctBttsNo, daysCount, reliable, best };
+}
+
+function renderStatBlock(stats, timeLabel){
+  let html = `<div class="slot-card ${stats.reliable?'reliable':''}">
+      <div class="slot-top">
+        <div class="slot-time">${timeLabel}</div>
+        <div>
+          <span class="slot-n">n=${stats.n} · ${stats.daysCount} jour(s) · moy ${stats.avg.toFixed(2)} buts</span>
+          <span class="badge ${stats.reliable?'ok':'warn'}">${stats.reliable?'FIABLE':'PEU FIABLE'}</span>
+        </div>
+      </div>
+      <table><thead><tr><th>Ligne</th><th>% Plus</th><th>% Moins</th></tr></thead><tbody>`;
+  stats.lineStats.forEach(ls=>{
+    html += `<tr><td>${ls.line}</td>
+      <td class="pct ${pctClass(ls.pctOver)}">${ls.pctOver.toFixed(0)}%</td>
+      <td class="pct ${pctClass(ls.pctUnder)}">${ls.pctUnder.toFixed(0)}%</td></tr>`;
+  });
+  html += '</tbody></table>';
+  html += `<table style="margin-top:6px;"><thead><tr><th>BTTS</th><th>% Oui</th><th>% Non</th></tr></thead><tbody>
+    <tr><td>Les 2 marquent</td>
+      <td class="pct ${pctClass(stats.pctBttsYes)}">${stats.pctBttsYes.toFixed(0)}%</td>
+      <td class="pct ${pctClass(stats.pctBttsNo)}">${stats.pctBttsNo.toFixed(0)}%</td></tr>
+    </tbody></table>`;
+  if(stats.best){
+    const label = stats.best.type==='btts' ? `BTTS ${stats.best.label}` : `${stats.best.dir} ${stats.best.label}`;
+    html += `<div class="suggestion"><b>${label}</b> — ${stats.best.pct.toFixed(0)}% de confiance sur ${stats.n} matchs (${stats.daysCount} jour(s))</div>`;
+  } else {
+    html += `<div class="suggestion none">${stats.reliable ? "Aucune ligne n'atteint le seuil de confiance choisi." : 'Pas assez de matchs / jours pour une suggestion fiable.'}</div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+function collectHundred(entries, keyToLabel){
+  const hundred = [];
+  entries.forEach(e=>{
+    const stats = e.stats;
+    stats.lineStats.forEach(ls=>{
+      if(ls.pctOver>=99.5) hundred.push({sortKey:e.sortKey, label:keyToLabel(e), n:stats.n, days:stats.daysCount, reliable:stats.reliable, text:`Plus de ${ls.line} buts`});
+      if(ls.pctUnder>=99.5) hundred.push({sortKey:e.sortKey, label:keyToLabel(e), n:stats.n, days:stats.daysCount, reliable:stats.reliable, text:`Moins de ${ls.line} buts`});
+    });
+    if(stats.pctBttsYes>=99.5) hundred.push({sortKey:e.sortKey, label:keyToLabel(e), n:stats.n, days:stats.daysCount, reliable:stats.reliable, text:'BTTS Oui (les 2 marquent)'});
+    if(stats.pctBttsNo>=99.5) hundred.push({sortKey:e.sortKey, label:keyToLabel(e), n:stats.n, days:stats.daysCount, reliable:stats.reliable, text:'BTTS Non'});
+  });
+  hundred.sort((a,b)=>a.sortKey-b.sortKey);
+  return hundred;
+}
+
+function runAnalysis(){
+  const slotSize = Math.max(1, Math.min(1440, parseInt(document.getElementById('slotSize').value || '30', 10)));
+  const minSample = Math.max(1, parseInt(document.getElementById('minSample').value || '15', 10));
+  const minConf = Math.max(50, Math.min(100, parseInt(document.getElementById('minConf').value || '65', 10)));
+  const minDays = Math.max(1, parseInt(document.getElementById('minDays').value || '1', 10));
+  const filterReliable = document.getElementById('filterReliable').value;
+  const dateFilter = document.getElementById('dateFilter').value;
+
+  const fullList = state.championships[state.active] || [];
+  const list = dateFilter==='all' ? fullList : fullList.filter(m=>m.date===dateFilter);
+  const resultsDiv = document.getElementById('analysisResults');
+
+  if(fullList.length===0){
+    resultsDiv.innerHTML = '<div class="card"><div class="empty">Aucun match pour ce championnat. Ajoute des résultats dans l\'onglet Saisie.</div></div>';
+    return;
+  }
+  if(list.length===0){
+    resultsDiv.innerHTML = '<div class="card"><div class="empty">Aucun match pour cette date.</div></div>';
+    return;
+  }
+
+  const totalDays = new Set(fullList.map(m=>m.date || '?')).size;
+
+  // ---------- Analyse par tranche horaire (heure du jour) ----------
+  const nSlots = Math.ceil(1440/slotSize);
+  const slots = Array.from({length:nSlots}, (_,i)=>({
+    start: i*slotSize,
+    end: Math.min(i*slotSize+slotSize-1,1439),
+    matches: []
+  }));
+  list.forEach(m=>{
+    const mins = timeToMinutes(m.heure);
+    const idx = Math.min(Math.floor(mins/slotSize), nSlots-1);
+    slots[idx].matches.push(m);
+  });
+  const slotResults = slots
+    .filter(s=>s.matches.length>0)
+    .map(s=>({
+      sortKey: s.start,
+      timeLabel: `${minutesToTime(s.start)} - ${minutesToTime(s.end+1)}`,
+      stats: computeStats(s.matches, minSample, minConf, minDays)
+    }));
+
+  const filteredSlots = filterReliable==='reliable' ? slotResults.filter(s=>s.stats.reliable) : slotResults;
+  filteredSlots.sort((a,b)=>{
+    const aConf = a.stats.best ? a.stats.best.pct : -1;
+    const bConf = b.stats.best ? b.stats.best.pct : -1;
+    if(aConf!==bConf) return bConf-aConf;
+    if(a.stats.reliable!==b.stats.reliable) return a.stats.reliable ? -1 : 1;
+    return b.stats.n-a.stats.n;
+  });
+
+  // ---------- Analyse par minute (toutes heures confondues) ----------
+  const minuteBuckets = Array.from({length:60}, ()=>[]);
+  list.forEach(m=>{
+    const min = timeToMinutes(m.heure) % 60;
+    minuteBuckets[min].push(m);
+  });
+  const minuteResults = minuteBuckets
+    .map((matches,min)=>({ sortKey:min, timeLabel:`Minute ${String(min).padStart(2,'0')}`, stats: computeStats(matches, minSample, minConf, minDays) }))
+    .filter(r=>r.stats.n>0);
+  const filteredMinutes = filterReliable==='reliable' ? minuteResults.filter(r=>r.stats.reliable) : minuteResults;
+  filteredMinutes.sort((a,b)=> b.stats.avg - a.stats.avg);
+
+  // ---------- Construction HTML ----------
+  const dateLabel = dateFilter==='all' ? `toutes dates confondues (${totalDays} jour(s) au total)` : `date du ${dateFilter}`;
+  let html = `<div class="card"><h2>Résultats — ${state.active}</h2>
+    <p class="hint">${list.length} matchs analysés — ${dateLabel}. ${totalDays<3 ? "⚠️ Moins de 3 jours de données : les patterns ne sont pas encore confirmés, continue à alimenter l'outil avant de te positionner sérieusement." : ''}</p></div>`;
+
+  // Récapitulatif des 100% par tranche horaire
+  const hundredSlots = collectHundred(slotResults, e=>e.timeLabel);
+  html += `<div class="card"><h2>🎯 Créneaux à 100% (par heure)</h2>`;
+  if(hundredSlots.length===0){
+    html += `<div class="empty">Aucun créneau à 100% avec les données actuelles.</div>`;
+  } else {
+    html += `<p class="hint">Classés par heure. Vérifie le nombre de jours distincts avant de te positionner — un 100% sur un seul jour peut n'être qu'une coïncidence.</p>
+      <table><thead><tr><th>Heure</th><th>Pari</th><th>n</th><th>Jours</th><th></th></tr></thead><tbody>`;
+    hundredSlots.forEach(h=>{
+      html += `<tr><td>${h.label}</td><td>${h.text}</td><td>${h.n}</td><td>${h.days}</td>
+        <td><span class="badge ${h.reliable?'ok':'warn'}">${h.reliable?'FIABLE':'PEU FIABLE'}</span></td></tr>`;
+    });
+    html += '</tbody></table>';
+  }
+  html += '</div>';
+
+  // Récapitulatif des 100% par minute
+  const hundredMinutes = collectHundred(minuteResults, e=>e.timeLabel);
+  html += `<div class="card"><h2>⏱️ Créneaux à 100% (par minute, toutes heures)</h2>
+    <p class="hint">Détecte si une minute précise (ex: la 55ème de chaque heure) ressort systématiquement, peu importe l'heure. Correspond à ton constat sur le championnat Italie.</p>`;
+  if(hundredMinutes.length===0){
+    html += `<div class="empty">Aucune minute à 100% avec les données actuelles.</div>`;
+  } else {
+    html += `<table><thead><tr><th>Minute</th><th>Pari</th><th>n</th><th>Jours</th><th></th></tr></thead><tbody>`;
+    hundredMinutes.forEach(h=>{
+      html += `<tr><td>${h.label}</td><td>${h.text}</td><td>${h.n}</td><td>${h.days}</td>
+        <td><span class="badge ${h.reliable?'ok':'warn'}">${h.reliable?'FIABLE':'PEU FIABLE'}</span></td></tr>`;
+    });
+    html += '</tbody></table>';
+  }
+  html += '</div>';
+
+  // Détail par tranche horaire
+  html += `<h3 style="padding:0 4px;">Détail par tranche horaire (trié par confiance)</h3>`;
+  filteredSlots.forEach(s=>{ html += renderStatBlock(s.stats, s.timeLabel); });
+
+  // Détail par minute — top 15 par moyenne de buts, pour repérer les minutes qui se démarquent
+  html += `<h3 style="padding:0 4px;">Détail par minute (top 15, triées par moyenne de buts)</h3>
+    <p class="hint" style="padding:0 4px;">Regroupe TOUS les matchs ayant cette minute précise, quelle que soit l'heure (ex: 14h55, 15h55, 16h55... sont tous comptés dans "Minute 55").</p>`;
+  filteredMinutes.slice(0,15).forEach(m=>{ html += renderStatBlock(m.stats, m.timeLabel); });
+
+  resultsDiv.innerHTML = html;
+}
+function pctClass(p){
+  if(p>=70) return 'high';
+  if(p>=55) return 'mid';
+  return 'low';
+}
+
+// ---------- Export / Import ----------
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  document.getElementById('exportArea').value = JSON.stringify(state, null, 0);
+});
+document.getElementById('copyBtn').addEventListener('click', ()=>{
+  const area = document.getElementById('exportArea');
+  if(!area.value){ area.value = JSON.stringify(state, null, 0); }
+  area.select();
+  document.execCommand('copy');
+  alert('Copié.');
+});
+document.getElementById('importBtn').addEventListener('click', ()=>{
+  const raw = document.getElementById('importArea').value.trim();
+  if(!raw) return;
+  try{
+    const incoming = JSON.parse(raw);
+    if(!incoming.championships) throw new Error('format invalide');
+    Object.keys(incoming.championships).forEach(name=>{
+      if(!state.championships[name]) state.championships[name] = [];
+      const existingIds = new Set(state.championships[name].map(m=>m.id));
+      incoming.championships[name].forEach(m=>{
+        if(!existingIds.has(m.id)) state.championships[name].push(m);
+      });
+    });
+    save();
+    renderChampSelect();
+    renderMatchTable();
+    alert('Import réussi (fusion sans doublons).');
+    document.getElementById('importArea').value = '';
+  }catch(e){
+    alert("Texte invalide, vérifie le format de l'export.");
+  }
+});
+document.getElementById('wipeBtn').addEventListener('click', ()=>{
+  if(confirm('Tout effacer pour tous les championnats ? Cette action est irréversible.')){
+    state = { championships: { "Italie": [] }, active: "Italie" };
+    save();
+    renderChampSelect();
+    renderMatchTable();
+  }
+});
+
+// ---------- Init ----------
+renderChampSelect();
+renderMatchTable();
+</script>
+
+</body>
+</html>
