@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Paliers de Buts — Analyseur de zones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B1220;
+    --surface:#121B2E;
+    --surface-alt:#1A2740;
+    --surface-raised:#20304E;
+    --line:#28395A;
+    --text:#E8EDF6;
+    --muted:#8A97AC;
+    --gold:#D4A73A;
+    --gold-dim:#8A7233;
+    --blue:#5B8DEF;
+    --green:#3FB68B;
+    --red:#E2604F;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-tap-highlight-color:transparent;
+    padding-bottom:90px;
+  }
+  h1,h2,h3{font-family:'Space Grotesk',system-ui,sans-serif; margin:0;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  header{
+    padding:22px 18px 14px;
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg, #101A2C 0%, #0B1220 100%);
+    position:sticky; top:0; z-index:20;
+  }
+  header .eyebrow{
+    color:var(--gold);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    margin-bottom:4px;
+  }
+  header h1{font-size:22px; font-weight:700;}
+  header p{color:var(--muted); font-size:13px; margin-top:4px;}
+
+  nav{
+    display:flex; gap:6px; padding:10px 14px;
+    background:var(--surface); border-bottom:1px solid var(--line);
+    position:sticky; top:78px; z-index:19; overflow-x:auto;
+  }
+  nav button{
+    flex:1; padding:10px 8px; border-radius:10px; border:1px solid transparent;
+    background:transparent; color:var(--muted); font-size:13px; font-weight:600;
+    font-family:'Inter',sans-serif; white-space:nowrap;
+  }
+  nav button.active{background:var(--surface-raised); color:var(--gold); border-color:var(--line);}
+
+  main{padding:16px 14px 40px; max-width:640px; margin:0 auto;}
+  section.view{display:none;}
+  section.view.active{display:block;}
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:16px;
+    margin-bottom:14px;
+  }
+  .card h3{font-size:15px; margin-bottom:12px; color:var(--text); display:flex; align-items:center; gap:8px;}
+  label{display:block; font-size:12px; color:var(--muted); margin-bottom:5px; margin-top:12px;}
+  label:first-child{margin-top:0;}
+  input[type=text], input[type=number], select{
+    width:100%; padding:11px 12px; border-radius:9px; border:1px solid var(--line);
+    background:var(--surface-alt); color:var(--text); font-size:14px; font-family:'Inter',sans-serif;
+  }
+  input:focus, select:focus{outline:none; border-color:var(--gold);}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+
+  .score-row{display:grid; grid-template-columns:1fr 1fr auto; gap:8px; margin-top:8px; align-items:center;}
+  .score-row input{font-family:'IBM Plex Mono',monospace;}
+  .score-row button{
+    background:var(--surface-raised); border:1px solid var(--line); color:var(--red);
+    border-radius:8px; width:38px; height:38px; font-size:16px;
+  }
+  .btn{
+    display:block; width:100%; padding:13px; border-radius:10px; border:none;
+    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:14px;
+    margin-top:14px; cursor:pointer;
+  }
+  .btn-gold{background:var(--gold); color:#0B1220;}
+  .btn-outline{background:transparent; border:1px solid var(--line); color:var(--text);}
+  .btn-green{background:var(--green); color:#06251C;}
+  .btn-small{width:auto; padding:8px 14px; font-size:12px; margin-top:0;}
+
+  .tier-table{width:100%; border-collapse:collapse; margin-top:10px; font-size:12.5px;}
+  .tier-table th{
+    text-align:left; color:var(--muted); font-weight:600; font-size:10.5px;
+    text-transform:uppercase; letter-spacing:.05em; padding:6px 6px; border-bottom:1px solid var(--line);
+  }
+  .tier-table td{padding:8px 6px; border-bottom:1px solid var(--line); font-family:'IBM Plex Mono',monospace;}
+  .tier-table tr.z1 td{background:rgba(212,167,58,.10);}
+  .tier-table tr.z2 td{background:rgba(91,141,239,.14);}
+  .tier-table tr.z3 td{background:rgba(226,96,79,.10);}
+  .tag{display:inline-block; font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px; margin-left:6px; font-family:'Space Grotesk',sans-serif;}
+  .tag-z1{background:var(--gold); color:#0B1220;}
+  .tag-z2{background:var(--blue); color:#08131F;}
+  .tag-z3{background:var(--red); color:#280E09;}
+
+  .gauge{margin-top:14px;}
+  .gauge-row{display:flex; align-items:center; gap:10px; margin-bottom:7px;}
+  .gauge-label{width:74px; font-size:11px; color:var(--muted); font-family:'IBM Plex Mono',monospace; flex-shrink:0;}
+  .gauge-bar-bg{flex:1; height:16px; background:var(--surface-alt); border-radius:6px; overflow:hidden;}
+  .gauge-bar{height:100%; border-radius:6px;}
+  .gauge-val{width:52px; text-align:right; font-size:11.5px; font-family:'IBM Plex Mono',monospace; color:var(--text); flex-shrink:0;}
+
+  .verdict{
+    margin-top:14px; padding:12px 14px; border-radius:10px; font-size:13px; line-height:1.5;
+    border:1px solid var(--line); background:var(--surface-alt);
+  }
+  .verdict.net{border-color:var(--green); color:#BEEEDD;}
+  .verdict.faible{border-color:var(--red); color:#F5C7BE;}
+
+  .seuil-box{
+    margin-top:14px; padding:16px; border-radius:10px; text-align:center;
+    background:linear-gradient(135deg, rgba(212,167,58,.14), rgba(91,141,239,.1));
+    border:1px solid var(--gold-dim);
+  }
+  .seuil-box .val{font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:700; color:var(--gold);}
+  .seuil-box .lbl{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; margin-top:2px;}
+
+  .checkbox-row{display:flex; align-items:center; gap:10px; margin-top:14px; padding:10px 12px; background:var(--surface-alt); border-radius:9px; border:1px solid var(--line);}
+  .checkbox-row input{width:18px; height:18px; accent-color:var(--gold);}
+  .checkbox-row span{font-size:12.5px; color:var(--muted);}
+
+  .match-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:10px;
+  }
+  .match-card .top{display:flex; justify-content:space-between; align-items:flex-start;}
+  .match-card .teams{font-weight:600; font-size:14.5px;}
+  .match-card .champ{font-size:11px; color:var(--muted); margin-top:2px;}
+  .match-card .seuil-mini{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--gold); margin-top:8px;}
+  .match-card .flag{font-size:10.5px; color:var(--red); margin-top:4px;}
+
+  .status-pill{font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:20px; font-family:'Space Grotesk',sans-serif;}
+  .pill-gagne{background:rgba(63,182,139,.18); color:var(--green);}
+  .pill-perdu{background:rgba(226,96,79,.18); color:var(--red);}
+
+  .stats-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;}
+  .stat-box{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px; text-align:center;}
+  .stat-box .num{font-family:'Space Grotesk',sans-serif; font-size:24px; font-weight:700;}
+  .stat-box .lbl{font-size:11px; color:var(--muted); margin-top:3px;}
+
+  .empty{text-align:center; color:var(--muted); font-size:13px; padding:30px 10px;}
+  .result-input{display:flex; gap:8px; margin-top:10px;}
+  .result-input input{flex:1;}
+  small.hint{display:block; color:var(--muted); font-size:11px; margin-top:4px;}
+
+  details.tier-group{
+    border:1px solid var(--line); border-radius:10px; margin-top:10px; overflow:hidden;
+    background:var(--surface-alt);
+  }
+  details.tier-group summary{
+    padding:10px 12px; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:13px;
+    color:var(--gold); list-style:none; display:flex; justify-content:space-between; align-items:center;
+    cursor:pointer;
+  }
+  details.tier-group summary::-webkit-details-marker{display:none;}
+  details.tier-group summary::after{content:'▾'; color:var(--muted); font-size:12px;}
+  details.tier-group[open] summary::after{content:'▴';}
+  .std-rows{padding:4px 10px 10px;}
+  .std-row{display:grid; grid-template-columns:auto 1fr; gap:10px; align-items:center; padding:6px 0;}
+  .std-row .std-label{font-family:'IBM Plex Mono',monospace; font-size:13px; width:44px; color:var(--text);}
+  .std-row input{font-family:'IBM Plex Mono',monospace; padding:8px 10px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Savoirs · Analyse virtuelle</div>
+  <h1>Paliers de Buts</h1>
+  <p>Zones de probabilité sur scores exacts — méthode zone 1 / zone 2 / zone 3</p>
+</header>
+
+<nav>
+  <button class="active" data-view="nouveau">Nouveau</button>
+  <button data-view="attente">En attente</button>
+  <button data-view="historique">Historique</button>
+</nav>
+
+<main>
+
+  <!-- ===== VUE: NOUVEAU MATCH ===== -->
+  <section class="view active" id="view-nouveau">
+    <div class="card">
+      <h3>Informations du match</h3>
+      <div class="row2">
+        <div>
+          <label>Championnat</label>
+          <input type="text" id="in-champ" placeholder="Ex: FC 25. Italy Championship">
+        </div>
+        <div>
+          <label>Heure / repère</label>
+          <input type="text" id="in-heure" placeholder="Ex: 14:24">
+        </div>
+      </div>
+      <div class="row2">
+        <div>
+          <label>Équipe A</label>
+          <input type="text" id="in-eqA" placeholder="Ex: Hellas Verona">
+        </div>
+        <div>
+          <label>Équipe B</label>
+          <input type="text" id="in-eqB" placeholder="Ex: Milano">
+        </div>
+      </div>
+      <label style="margin-top:16px;">Cotes 1X2 (victoire A / nul / victoire B)</label>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+        <input type="number" step="0.01" id="in-cote1" placeholder="Cote A" oninput="previewEcart()">
+        <input type="number" step="0.01" id="in-coteN" placeholder="Cote nul" oninput="previewEcart()">
+        <input type="number" step="0.01" id="in-cote2" placeholder="Cote B" oninput="previewEcart()">
+      </div>
+      <small class="hint" id="ecart-preview">Renseigne les cotes 1X2 pour voir l'écart entre les deux équipes.</small>
+    </div>
+
+    <div class="card">
+      <h3>Scores exacts &amp; cotes</h3>
+      <small class="hint">Les scores sont déjà là, groupés par total de buts. Tape juste la cote en face de ceux qui apparaissent sur ta capture — laisse vide le reste.</small>
+      <div id="std-grid"></div>
+      <label style="margin-top:18px;">Score non listé (optionnel)</label>
+      <div id="score-rows"></div>
+      <button class="btn btn-outline" onclick="addScoreRow()">+ Ajouter un score personnalisé</button>
+      <button class="btn btn-gold" onclick="computeZones()">Calculer les zones</button>
+    </div>
+
+    <div class="card" id="resultats-card" style="display:none;">
+      <h3>Répartition par palier de buts</h3>
+      <table class="tier-table" id="tier-table"><thead>
+        <tr><th>Buts</th><th>Meilleure cote</th><th>Probabilité</th><th>Zone</th></tr>
+      </thead><tbody id="tier-body"></tbody></table>
+
+      <label>Zone 1 (favori du bookmaker)</label>
+      <select id="sel-z1" onchange="onZoneOverride()"></select>
+      <label>Zone 2 (palier suivant, référence)</label>
+      <select id="sel-z2" onchange="onZoneOverride()"></select>
+      <label>Zone 3 (palier de confirmation)</label>
+      <select id="sel-z3" onchange="onZoneOverride()"></select>
+
+      <div class="gauge" id="gauge"></div>
+      <div class="verdict" id="verdict"></div>
+
+      <div class="seuil-box">
+        <div class="val" id="seuil-val">—</div>
+        <div class="lbl">Seuil suggéré</div>
+      </div>
+
+      <div class="checkbox-row">
+        <input type="checkbox" id="in-ecart">
+        <span>Écart favori important entre les deux équipes (coché automatiquement si les cotes 1X2 montrent un grand favori — tu peux corriger toi-même)</span>
+      </div>
+
+      <button class="btn btn-green" onclick="saveMatch()">Enregistrer ce match en attente</button>
+    </div>
+  </section>
+
+  <!-- ===== VUE: EN ATTENTE ===== -->
+  <section class="view" id="view-attente">
+    <div id="attente-list"></div>
+  </section>
+
+  <!-- ===== VUE: HISTORIQUE ===== -->
+  <section class="view" id="view-historique">
+    <div class="stats-grid" id="stats-grid"></div>
+    <div id="historique-list"></div>
+    <button class="btn btn-outline" onclick="resetAll()">Réinitialiser tout l'historique</button>
+  </section>
+
+</main>
+
+<script>
+/* ---------- STORAGE ---------- */
+const LS_PENDING = 'pb_pending';
+const LS_HISTORY = 'pb_history';
+const load = k => JSON.parse(localStorage.getItem(k) || '[]');
+const save = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+
+/* ---------- NAV ---------- */
+document.querySelectorAll('nav button').forEach(btn=>{
+  btn.onclick = ()=>{
+    document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('section.view').forEach(v=>v.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('view-'+btn.dataset.view).classList.add('active');
+    if(btn.dataset.view==='attente') renderAttente();
+    if(btn.dataset.view==='historique') renderHistorique();
+  };
+});
+
+/* ---------- ECART FAVORI (cotes 1X2) ---------- */
+function previewEcart(){
+  const c1 = parseFloat(document.getElementById('in-cote1').value);
+  const c2 = parseFloat(document.getElementById('in-cote2').value);
+  const preview = document.getElementById('ecart-preview');
+  const checkbox = document.getElementById('in-ecart');
+  if(isNaN(c1) || isNaN(c2) || c1<=0 || c2<=0){
+    preview.textContent = 'Renseigne les cotes 1X2 pour voir l\u2019écart entre les deux équipes.';
+    return;
+  }
+  const p1 = 100/c1, p2 = 100/c2;
+  const favProb = Math.max(p1,p2), outProb = Math.min(p1,p2);
+  const ratio = favProb/outProb;
+  const favTeam = p1>p2 ? (document.getElementById('in-eqA').value.trim()||'Équipe A') : (document.getElementById('in-eqB').value.trim()||'Équipe B');
+  if(ratio >= 2){
+    preview.innerHTML = `⚠ ${favTeam} est nettement favori (${ratio.toFixed(1)}× plus probable) — écart favori important, case cochée automatiquement.`;
+    checkbox.checked = true;
+  } else {
+    preview.innerHTML = `Match plutôt équilibré (${ratio.toFixed(1)}×) — pas d'écart favori marqué.`;
+    checkbox.checked = false;
+  }
+}
+
+/* ---------- STANDARD SCORE GRID (par total de buts) ---------- */
+function buildStdGrid(){
+  const maxTotal = 7;
+  const grid = document.getElementById('std-grid');
+  grid.innerHTML = '';
+  for(let t=0; t<=maxTotal; t++){
+    const scores = [];
+    for(let h=0; h<=t; h++){
+      const a = t-h;
+      scores.push(`${h}-${a}`);
+    }
+    const det = document.createElement('details');
+    det.className = 'tier-group';
+    if(t<=4) det.open = true;
+    const rowsHtml = scores.map(s=>`
+      <div class="std-row">
+        <div class="std-label">${s}</div>
+        <input type="number" step="0.01" placeholder="Cote" class="std-cote" data-score="${s}">
+      </div>`).join('');
+    det.innerHTML = `<summary>${t} but${t>1?'s':''} au total</summary><div class="std-rows">${rowsHtml}</div>`;
+    grid.appendChild(det);
+  }
+}
+buildStdGrid();
+function resetStdGrid(){
+  document.querySelectorAll('.std-cote').forEach(el=>el.value='');
+}
+
+/* ---------- CUSTOM SCORE ROWS ---------- */
+function addScoreRow(score='', cote=''){
+  const wrap = document.getElementById('score-rows');
+  const row = document.createElement('div');
+  row.className = 'score-row';
+  row.innerHTML = `
+    <input type="text" placeholder="Score (7-1)" class="sc-score" value="${score}">
+    <input type="number" step="0.01" placeholder="Cote" class="sc-cote" value="${cote}">
+    <button onclick="this.parentElement.remove()">✕</button>`;
+  wrap.appendChild(row);
+}
+
+/* ---------- ZONE COMPUTATION ---------- */
+let currentTiers = null; // {total: {best: {score,cote,prob}, all:[...]}}
+let currentZones = {z1:null, z2:null, z3:null};
+
+function computeZones(){
+  const entries = [];
+
+  // scores de la grille standard
+  document.querySelectorAll('.std-cote').forEach(el=>{
+    const c = parseFloat(el.value);
+    if(!isNaN(c) && c>0){
+      const s = el.dataset.score;
+      const parts = s.split('-').map(n=>parseInt(n,10));
+      const total = parts[0]+parts[1];
+      entries.push({score:s, cote:c, total, prob:100/c});
+    }
+  });
+
+  // scores personnalisés
+  const scoreEls = document.querySelectorAll('.sc-score');
+  const coteEls = document.querySelectorAll('.sc-cote');
+  scoreEls.forEach((el,i)=>{
+    const s = el.value.trim();
+    const c = parseFloat(coteEls[i].value);
+    if(s && !isNaN(c) && c>0){
+      const parts = s.split('-').map(n=>parseInt(n.trim(),10));
+      if(parts.length===2 && !isNaN(parts[0]) && !isNaN(parts[1])){
+        const total = parts[0]+parts[1];
+        entries.push({score:s, cote:c, total, prob:100/c});
+      }
+    }
+  });
+  if(entries.length < 3){
+    alert('Ajoute au moins 3 scores avec leur cote pour calculer les zones.');
+    return;
+  }
+
+  // group by total
+  const tiers = {};
+  entries.forEach(e=>{
+    if(!tiers[e.total]) tiers[e.total] = [];
+    tiers[e.total].push(e);
+  });
+  const totals = Object.keys(tiers).map(Number).sort((a,b)=>a-b);
+  const tierBest = {};
+  totals.forEach(t=>{
+    const best = tiers[t].reduce((a,b)=> a.prob>b.prob ? a : b); // best = lowest cote = highest prob
+    tierBest[t] = best;
+  });
+  currentTiers = {tiers, tierBest, totals};
+
+  // suggestion algorithm: peak tier by prob, walk upward while ratio >= 0.6
+  let peak = totals[0];
+  totals.forEach(t=>{ if(tierBest[t].prob > tierBest[peak].prob) peak = t; });
+  let z1 = peak;
+  for(let t = peak+1; totals.includes(t); t++){
+    const ratio = tierBest[t].prob / tierBest[peak].prob;
+    if(ratio >= 0.6){ z1 = t; } else break;
+  }
+  let z2 = totals.includes(z1+1) ? z1+1 : null;
+  let z3 = totals.includes(z1+2) ? z1+2 : null;
+
+  currentZones = {z1,z2,z3};
+  renderTierTable();
+  populateZoneSelectors();
+  renderZoneOutputs();
+  document.getElementById('resultats-card').style.display = 'block';
+  document.getElementById('resultats-card').scrollIntoView({behavior:'smooth'});
+}
+
+function renderTierTable(){
+  const {tiers, tierBest, totals} = currentTiers;
+  const body = document.getElementById('tier-body');
+  body.innerHTML = '';
+  totals.forEach(t=>{
+    const best = tierBest[t];
+    const tr = document.createElement('tr');
+    let zoneTag = '';
+    if(t===currentZones.z1){ tr.classList.add('z1'); zoneTag='<span class="tag tag-z1">Z1</span>'; }
+    else if(t===currentZones.z2){ tr.classList.add('z2'); zoneTag='<span class="tag tag-z2">Z2</span>'; }
+    else if(t===currentZones.z3){ tr.classList.add('z3'); zoneTag='<span class="tag tag-z3">Z3</span>'; }
+    tr.innerHTML = `<td>${t} but${t>1?'s':''}<br><small style="color:var(--muted)">${tiers[t].map(e=>e.score).join(', ')}</small></td>
+      <td>${best.score} · ${best.cote}</td>
+      <td>${best.prob.toFixed(1)}%</td>
+      <td>${zoneTag}</td>`;
+    body.appendChild(tr);
+  });
+}
+
+function populateZoneSelectors(){
+  const {totals} = currentTiers;
+  ['sel-z1','sel-z2','sel-z3'].forEach((id,idx)=>{
+    const sel = document.getElementById(id);
+    sel.innerHTML = '<option value="">—</option>' + totals.map(t=>`<option value="${t}">${t} but${t>1?'s':''}</option>`).join('');
+  });
+  document.getElementById('sel-z1').value = currentZones.z1 ?? '';
+  document.getElementById('sel-z2').value = currentZones.z2 ?? '';
+  document.getElementById('sel-z3').value = currentZones.z3 ?? '';
+}
+
+function onZoneOverride(){
+  currentZones.z1 = document.getElementById('sel-z1').value ? parseInt(document.getElementById('sel-z1').value) : null;
+  currentZones.z2 = document.getElementById('sel-z2').value ? parseInt(document.getElementById('sel-z2').value) : null;
+  currentZones.z3 = document.getElementById('sel-z3').value ? parseInt(document.getElementById('sel-z3').value) : null;
+  renderTierTable();
+  renderZoneOutputs();
+}
+
+function renderZoneOutputs(){
+  const {tierBest} = currentTiers;
+  const {z1,z2,z3} = currentZones;
+  const gauge = document.getElementById('gauge');
+  const verdict = document.getElementById('verdict');
+  const seuilVal = document.getElementById('seuil-val');
+
+  let html = '';
+  [['Zone 1', z1, 'var(--gold)'], ['Zone 2', z2, 'var(--blue)'], ['Zone 3', z3, 'var(--red)']].forEach(([label, t, color])=>{
+    const prob = (t!=null && tierBest[t]) ? tierBest[t].prob : 0;
+    const pct = Math.min(prob*3, 100);
+    html += `<div class="gauge-row">
+      <div class="gauge-label">${label}</div>
+      <div class="gauge-bar-bg"><div class="gauge-bar" style="width:${pct}%; background:${color};"></div></div>
+      <div class="gauge-val">${t!=null ? prob.toFixed(1)+'%' : '—'}</div>
+    </div>`;
+  });
+  gauge.innerHTML = html;
+
+  if(z2!=null && z3!=null && tierBest[z2] && tierBest[z3]){
+    const p2 = tierBest[z2].prob, p3 = tierBest[z3].prob;
+    const ratio = p2/p3;
+    const diff = (p2-p3).toFixed(1);
+    if(ratio >= 1.5){
+      verdict.className = 'verdict net';
+      verdict.innerHTML = `<strong>Écart net confirmé.</strong> Zone 2 (${p2.toFixed(1)}%) est ${ratio.toFixed(1)}× plus probable que Zone 3 (${p3.toFixed(1)}%), écart de ${diff} points. Zone 2 est retenue comme référence fiable.`;
+    } else {
+      verdict.className = 'verdict faible';
+      verdict.innerHTML = `<strong>Écart faible — à vérifier toi-même.</strong> Zone 2 (${p2.toFixed(1)}%) et Zone 3 (${p3.toFixed(1)}%) ne sont pas assez éloignées (${ratio.toFixed(1)}×). Le signal est moins net sur ce match.`;
+    }
+  } else {
+    verdict.className = 'verdict';
+    verdict.innerHTML = `Sélectionne les trois zones pour évaluer l'écart.`;
+  }
+
+  seuilVal.textContent = z2!=null ? `Moins de ${z2+0.5} buts` : '—';
+}
+
+/* ---------- SAVE MATCH (pending) ---------- */
+function saveMatch(){
+  if(currentZones.z2 == null){
+    alert('Sélectionne au moins la Zone 2 pour fixer un seuil.');
+    return;
+  }
+  const match = {
+    id: Date.now(),
+    champ: document.getElementById('in-champ').value.trim() || 'Championnat non précisé',
+    heure: document.getElementById('in-heure').value.trim(),
+    eqA: document.getElementById('in-eqA').value.trim() || 'Équipe A',
+    eqB: document.getElementById('in-eqB').value.trim() || 'Équipe B',
+    cote1: document.getElementById('in-cote1').value,
+    coteN: document.getElementById('in-coteN').value,
+    cote2: document.getElementById('in-cote2').value,
+    zones: {...currentZones},
+    seuil: currentZones.z2 + 0.5,
+    ecart: document.getElementById('in-ecart').checked,
+    date: new Date().toLocaleDateString('fr-FR'),
+  };
+  const pending = load(LS_PENDING);
+  pending.unshift(match);
+  save(LS_PENDING, pending);
+
+  // reset form
+  document.getElementById('in-champ').value='';
+  document.getElementById('in-heure').value='';
+  document.getElementById('in-eqA').value='';
+  document.getElementById('in-eqB').value='';
+  document.getElementById('in-cote1').value='';
+  document.getElementById('in-coteN').value='';
+  document.getElementById('in-cote2').value='';
+  document.getElementById('ecart-preview').textContent = 'Renseigne les cotes 1X2 pour voir l\u2019écart entre les deux équipes.';
+  document.getElementById('in-ecart').checked=false;
+  document.getElementById('score-rows').innerHTML='';
+  resetStdGrid();
+  document.getElementById('resultats-card').style.display='none';
+
+  alert('Match enregistré en attente de résultat.');
+  document.querySelector('nav button[data-view="attente"]').click();
+}
+
+/* ---------- ATTENTE VIEW ---------- */
+function renderAttente(){
+  const pending = load(LS_PENDING);
+  const list = document.getElementById('attente-list');
+  if(pending.length === 0){
+    list.innerHTML = '<div class="empty">Aucun match en attente. Ajoute-en un depuis l\u2019onglet "Nouveau".</div>';
+    return;
+  }
+  list.innerHTML = pending.map(m=>`
+    <div class="match-card">
+      <div class="top">
+        <div>
+          <div class="teams">${m.eqA} vs ${m.eqB}</div>
+          <div class="champ">${m.champ} ${m.heure ? '· '+m.heure : ''} · ${m.date}</div>
+        </div>
+      </div>
+      <div class="seuil-mini">Seuil : moins de ${m.seuil} buts</div>
+      ${(m.cote1||m.coteN||m.cote2) ? `<div class="champ">Cotes 1X2 : ${m.cote1||'—'} / ${m.coteN||'—'} / ${m.cote2||'—'}</div>` : ''}
+      ${m.ecart ? '<div class="flag">⚠ Écart favori signalé</div>' : ''}
+      <div class="result-input">
+        <input type="text" placeholder="Score final (ex: 2-1)" id="res-${m.id}">
+        <button class="btn btn-gold btn-small" onclick="submitResult(${m.id})">Valider</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function submitResult(id){
+  const input = document.getElementById('res-'+id);
+  const val = input.value.trim();
+  const parts = val.split('-').map(n=>parseInt(n.trim(),10));
+  if(parts.length!==2 || isNaN(parts[0]) || isNaN(parts[1])){
+    alert('Format invalide. Utilise par exemple 2-1');
+    return;
+  }
+  const totalButs = parts[0]+parts[1];
+  const pending = load(LS_PENDING);
+  const idx = pending.findIndex(m=>m.id===id);
+  if(idx === -1) return;
+  const m = pending[idx];
+  const gagne = totalButs < m.seuil;
+  const historyEntry = {...m, scoreFinal: val, totalButs, gagne};
+  pending.splice(idx,1);
+  save(LS_PENDING, pending);
+  const hist = load(LS_HISTORY);
+  hist.unshift(historyEntry);
+  save(LS_HISTORY, hist);
+  renderAttente();
+}
+
+/* ---------- HISTORIQUE VIEW ---------- */
+function renderHistorique(){
+  const hist = load(LS_HISTORY);
+  const statsGrid = document.getElementById('stats-grid');
+  const list = document.getElementById('historique-list');
+
+  if(hist.length === 0){
+    statsGrid.innerHTML = '';
+    list.innerHTML = '<div class="empty">Aucun résultat enregistré pour le moment.</div>';
+    return;
+  }
+
+  const total = hist.length;
+  const gagnes = hist.filter(m=>m.gagne).length;
+  const perdus = total - gagnes;
+  const taux = ((gagnes/total)*100).toFixed(0);
+
+  const sansEcart = hist.filter(m=>!m.ecart);
+  const avecEcart = hist.filter(m=>m.ecart);
+  const tauxSans = sansEcart.length ? ((sansEcart.filter(m=>m.gagne).length/sansEcart.length)*100).toFixed(0) : '—';
+  const tauxAvec = avecEcart.length ? ((avecEcart.filter(m=>m.gagne).length/avecEcart.length)*100).toFixed(0) : '—';
+
+  statsGrid.innerHTML = `
+    <div class="stat-box"><div class="num" style="color:var(--gold)">${total}</div><div class="lbl">Matchs analysés</div></div>
+    <div class="stat-box"><div class="num" style="color:var(--green)">${taux}%</div><div class="lbl">Taux de réussite</div></div>
+    <div class="stat-box"><div class="num" style="color:var(--green)">${gagnes}</div><div class="lbl">Gagnés</div></div>
+    <div class="stat-box"><div class="num" style="color:var(--red)">${perdus}</div><div class="lbl">Perdus</div></div>
+    <div class="stat-box"><div class="num" style="color:var(--blue)">${tauxSans}%</div><div class="lbl">Taux — sans écart favori</div></div>
+    <div class="stat-box"><div class="num" style="color:var(--red)">${tauxAvec}%</div><div class="lbl">Taux — avec écart favori</div></div>
+  `;
+
+  list.innerHTML = hist.map(m=>`
+    <div class="match-card">
+      <div class="top">
+        <div>
+          <div class="teams">${m.eqA} vs ${m.eqB}</div>
+          <div class="champ">${m.champ} · ${m.date}</div>
+        </div>
+        <span class="status-pill ${m.gagne?'pill-gagne':'pill-perdu'}">${m.gagne?'GAGNÉ':'PERDU'}</span>
+      </div>
+      <div class="seuil-mini">Seuil : moins de ${m.seuil} buts · Résultat : ${m.scoreFinal} (${m.totalButs} but${m.totalButs>1?'s':''})</div>
+      ${m.ecart ? '<div class="flag">⚠ Écart favori signalé</div>' : ''}
+      <button class="btn btn-outline btn-small" style="margin-top:10px;" onclick="deleteHist(${m.id})">Supprimer</button>
+    </div>
+  `).join('');
+}
+
+function deleteHist(id){
+  let hist = load(LS_HISTORY);
+  hist = hist.filter(m=>m.id!==id);
+  save(LS_HISTORY, hist);
+  renderHistorique();
+}
+
+function resetAll(){
+  if(confirm('Effacer tout l\u2019historique et les matchs en attente ? Cette action est irréversible.')){
+    localStorage.removeItem(LS_PENDING);
+    localStorage.removeItem(LS_HISTORY);
+    renderAttente();
+    renderHistorique();
+  }
+}
+</script>
+</body>
+</html>
