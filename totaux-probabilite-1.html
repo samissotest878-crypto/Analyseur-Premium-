@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Totaux Probabilité — Analyseur de côtes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a120e;
+    --card:#111c16;
+    --card-2:#0e1712;
+    --line:#1e2f26;
+    --text:#eaf2ec;
+    --muted:#8ba396;
+    --gold:#d7b56d;
+    --green:#3ddc84;
+    --amber:#e0a83e;
+    --red:#e0573e;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #10231a 0%, transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    padding-bottom:50px;
+    -webkit-tap-highlight-color:transparent;
+  }
+  header{
+    padding:20px 16px 14px;
+    text-align:center;
+    border-bottom:1px solid var(--line);
+  }
+  header h1{
+    font-family:'Oswald',sans-serif;
+    font-weight:700;
+    font-size:21px;
+    letter-spacing:.4px;
+    margin:0 0 2px;
+    text-transform:uppercase;
+  }
+  header h1 span{color:var(--gold);}
+  header p{margin:0;color:var(--muted);font-size:11.5px;}
+
+  .wrap{max-width:640px;margin:0 auto;padding:14px 12px;}
+
+  /* --- match info bar --- */
+  .infobar{
+    display:flex;
+    gap:8px;
+    margin-bottom:12px;
+  }
+  .infobar select, .infobar input[type=time]{
+    flex:1;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:9px;
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    font-size:12.5px;
+    padding:9px 8px;
+  }
+  .infobar select{flex:1.6;}
+
+  /* --- accordion --- */
+  details.acc{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    margin-bottom:10px;
+    overflow:hidden;
+  }
+  details.acc summary{
+    list-style:none;
+    cursor:pointer;
+    padding:12px 14px;
+    font-family:'Oswald',sans-serif;
+    font-size:14px;
+    font-weight:600;
+    letter-spacing:.3px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    text-transform:uppercase;
+  }
+  details.acc summary::-webkit-details-marker{display:none;}
+  details.acc summary::after{
+    content:"▾";
+    color:var(--gold);
+    font-size:13px;
+    transition:transform .2s ease;
+  }
+  details.acc[open] summary::after{transform:rotate(180deg);}
+  details.acc summary .count{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10.5px;
+    color:var(--muted);
+    text-transform:none;
+    margin-left:6px;
+  }
+  .rows{padding:0 12px 12px;}
+
+  .line-row{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin-bottom:6px;
+  }
+  .line-row .line-label{
+    width:46px;
+    flex-shrink:0;
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    color:var(--muted);
+  }
+  .line-row input{
+    flex:1;
+    min-width:0;
+    background:var(--card-2);
+    border:1px solid var(--line);
+    border-radius:7px;
+    padding:7px 6px;
+    color:var(--text);
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    text-align:center;
+  }
+  .line-row input::placeholder{color:#4a5c50;font-size:11px;}
+  .line-row input:focus{outline:none;border-color:var(--gold);}
+
+  .col-heads{
+    display:flex;
+    gap:6px;
+    padding:0 12px 4px;
+    margin-top:2px;
+  }
+  .col-heads span:first-child{width:46px;flex-shrink:0;}
+  .col-heads span{
+    flex:1;
+    font-size:9.5px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.4px;
+    text-align:center;
+  }
+
+  /* --- calc button --- */
+  .calc-btn{
+    width:100%;
+    background:linear-gradient(135deg,#2a5d3f,#1c4530);
+    border:1px solid #3a7050;
+    color:#eaf2ec;
+    font-family:'Oswald',sans-serif;
+    font-weight:600;
+    font-size:15px;
+    letter-spacing:.5px;
+    text-transform:uppercase;
+    padding:14px;
+    border-radius:12px;
+    margin:6px 0 14px;
+  }
+  .calc-btn:active{filter:brightness(1.15);}
+
+  /* --- results --- */
+  .result-panel{
+    background:var(--card);
+    border:1px solid var(--gold);
+    border-radius:14px;
+    padding:16px;
+    margin-bottom:16px;
+  }
+  .result-panel h3{
+    margin:0 0 10px;
+    font-family:'Oswald',sans-serif;
+    font-size:14px;
+    text-transform:uppercase;
+    color:var(--gold);
+    letter-spacing:.4px;
+  }
+  .stat-line{
+    display:flex;
+    justify-content:space-between;
+    font-size:12.5px;
+    color:var(--muted);
+    padding:5px 0;
+    border-bottom:1px dashed var(--line);
+  }
+  .stat-line b{color:var(--text);font-family:'JetBrains Mono',monospace;}
+  .pronostic-box{
+    margin-top:12px;
+    padding:14px;
+    border-radius:10px;
+    background:var(--card-2);
+    text-align:center;
+  }
+  .pronostic-box .p-label{
+    font-family:'Oswald',sans-serif;
+    font-size:20px;
+    font-weight:700;
+    margin-bottom:4px;
+  }
+  .pronostic-box .p-tag{
+    display:inline-block;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    padding:3px 10px;
+    border-radius:20px;
+    border:1px solid var(--line);
+    margin-top:4px;
+  }
+  .p-tag.fort{color:var(--green);border-color:var(--green);}
+  .p-tag.moderate{color:var(--amber);border-color:var(--amber);}
+  .p-tag.faible{color:var(--red);border-color:var(--red);}
+  .concord-note{
+    margin-top:10px;
+    font-size:11.5px;
+    color:var(--muted);
+    line-height:1.5;
+    text-align:center;
+  }
+  .concord-note b{color:var(--gold);}
+
+  /* --- history --- */
+  .hist-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:8px 0;
+    border-bottom:1px solid var(--line);
+    font-size:11.5px;
+  }
+  .hist-item:last-child{border-bottom:none;}
+  .hist-item .hi-left{color:var(--muted);}
+  .hist-item .hi-left b{color:var(--text);display:block;font-size:12.5px;margin-bottom:2px;}
+  .hist-item .hi-right{
+    font-family:'JetBrains Mono',monospace;
+    text-align:right;
+  }
+  .hist-empty{color:var(--muted);font-size:12px;padding:10px 0;text-align:center;}
+  .clear-hist-btn{
+    width:100%;
+    margin-top:8px;
+    background:var(--card-2);
+    border:1px solid var(--line);
+    color:var(--muted);
+    padding:9px;
+    border-radius:8px;
+    font-size:12px;
+  }
+
+  footer{
+    max-width:640px;
+    margin:0 auto;
+    padding:0 12px;
+    display:flex;
+    gap:8px;
+  }
+  footer button{
+    flex:1;
+    background:var(--card);
+    border:1px solid var(--line);
+    color:var(--muted);
+    padding:11px;
+    border-radius:9px;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:12.5px;
+  }
+  footer button:active{border-color:var(--gold);color:var(--gold);}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Totaux <span>Probabilité</span></h1>
+  <p>Match + équipe 1 + équipe 2 → comparaison → pronostic</p>
+</header>
+
+<div class="wrap">
+
+  <div class="infobar">
+    <select id="champ">
+      <option value="">Championnat...</option>
+      <option>FC 26 - Champions League</option>
+      <option>FC 26 - Championnat du monde</option>
+      <option>FC 25 - Italy Championship</option>
+      <option>FC 25 - Championnat d'Allemagne</option>
+      <option>FC 25 - Championnat d'Angleterre</option>
+      <option>FC 25 - Ligue européenne</option>
+      <option>FC 26 - Spain Championship</option>
+    </select>
+    <input type="time" id="heure">
+  </div>
+
+  <details class="acc" id="accMatch" open>
+    <summary>Total du match <span class="count" id="cntMatch"></span></summary>
+    <div class="col-heads"><span></span><span>Plus</span><span>Moins</span></div>
+    <div class="rows" id="rowsMatch"></div>
+  </details>
+
+  <details class="acc" id="accT1">
+    <summary>Total équipe 1 <span class="count" id="cntT1"></span></summary>
+    <div class="col-heads"><span></span><span>Plus</span><span>Moins</span></div>
+    <div class="rows" id="rowsT1"></div>
+  </details>
+
+  <details class="acc" id="accT2">
+    <summary>Total équipe 2 <span class="count" id="cntT2"></span></summary>
+    <div class="col-heads"><span></span><span>Plus</span><span>Moins</span></div>
+    <div class="rows" id="rowsT2"></div>
+  </details>
+
+  <button class="calc-btn" id="calcBtn">Calculer le pronostic</button>
+
+  <div class="result-panel" id="resultPanel" style="display:none;"></div>
+
+  <details class="acc" id="accHist">
+    <summary>Historique <span class="count" id="histCount">(0)</span></summary>
+    <div class="rows" id="histList" style="padding-top:8px;"></div>
+    <div style="padding:0 12px 12px;">
+      <button class="clear-hist-btn" id="clearHistBtn">Vider l'historique</button>
+    </div>
+  </details>
+
+</div>
+
+<footer>
+  <button id="resetBtn">Réinitialiser</button>
+  <button id="fillBtn">Match test</button>
+</footer>
+
+<script>
+const LINES = [0.5,1,1.5,2,2.5,3,3.5,4,4.5];
+const INPUT_KEY = "totaux_probabilite_inputs_v2";
+const HIST_KEY = "totaux_probabilite_historique_v2";
+
+function fmt(line){ return line.toString().replace('.',','); }
+
+function buildRows(container, prefix){
+  container.innerHTML = '';
+  LINES.forEach(line=>{
+    const row = document.createElement('div');
+    row.className = 'line-row';
+    row.innerHTML = `
+      <span class="line-label">+${fmt(line)}</span>
+      <input type="number" step="0.01" min="1" inputmode="decimal" id="${prefix}-over-${line}" placeholder="Plus">
+      <input type="number" step="0.01" min="1" inputmode="decimal" id="${prefix}-under-${line}" placeholder="Moins">
+    `;
+    container.appendChild(row);
+  });
+}
+buildRows(document.getElementById('rowsMatch'), 'm');
+buildRows(document.getElementById('rowsT1'), 't1');
+buildRows(document.getElementById('rowsT2'), 't2');
+
+/* ---------- persistence of raw inputs ---------- */
+function saveInputs(){
+  const data = { champ: document.getElementById('champ').value, heure: document.getElementById('heure').value, vals:{} };
+  LINES.forEach(line=>{
+    ['m','t1','t2'].forEach(p=>{
+      const o = document.getElementById(`${p}-over-${line}`).value;
+      const u = document.getElementById(`${p}-under-${line}`).value;
+      if(o || u) data.vals[`${p}-${line}`] = {o,u};
+    });
+  });
+  localStorage.setItem(INPUT_KEY, JSON.stringify(data));
+}
+function restoreInputs(){
+  try{
+    const data = JSON.parse(localStorage.getItem(INPUT_KEY));
+    if(!data) return;
+    if(data.champ) document.getElementById('champ').value = data.champ;
+    if(data.heure) document.getElementById('heure').value = data.heure;
+    Object.keys(data.vals||{}).forEach(k=>{
+      const [p,line] = k.split('-');
+      const v = data.vals[k];
+      if(v.o) document.getElementById(`${p}-over-${line}`).value = v.o;
+      if(v.u) document.getElementById(`${p}-under-${line}`).value = v.u;
+    });
+  }catch(e){}
+}
+restoreInputs();
+document.querySelectorAll('input, select').forEach(el=>{
+  el.addEventListener('input', saveInputs);
+  el.addEventListener('change', saveInputs);
+});
+
+/* ---------- probability engine ---------- */
+function computeProbs(prefix){
+  const list = [];
+  LINES.forEach(line=>{
+    const over = parseFloat(document.getElementById(`${prefix}-over-${line}`).value);
+    const under = parseFloat(document.getElementById(`${prefix}-under-${line}`).value);
+    if(over && over > 1){
+      let prob = 100/over;
+      if(under && under > 1){
+        const io = 100/over, iu = 100/under;
+        prob = (io/(io+iu))*100;
+      }
+      list.push({line, prob});
+    }
+  });
+  return list;
+}
+
+function expectedTotal(list){
+  if(!list.length) return null;
+  const sorted = [...list].sort((a,b)=>a.line-b.line);
+  for(let i=0;i<sorted.length-1;i++){
+    const a = sorted[i], b = sorted[i+1];
+    if(a.prob >= 50 && b.prob <= 50){
+      if(a.prob === b.prob) return a.line;
+      const t = (a.prob-50)/(a.prob-b.prob);
+      return +(a.line + t*(b.line-a.line)).toFixed(2);
+    }
+  }
+  if(sorted[0].prob < 50) return sorted[0].line;
+  return sorted[sorted.length-1].line;
+}
+
+function bestSignal(list){
+  let best = null;
+  list.forEach(p=>{
+    const dev = Math.abs(p.prob-50);
+    if(!best || dev > Math.abs(best.prob-50)) best = p;
+  });
+  return best;
+}
+
+function classify(pct){
+  if(pct >= 70) return {cls:'fort', label:'SIGNAL FORT'};
+  if(pct >= 50) return {cls:'moderate', label:'MODÉRÉ'};
+  return {cls:'faible', label:'FAIBLE'};
+}
+
+/* ---------- calculation trigger ---------- */
+document.getElementById('calcBtn').addEventListener('click', ()=>{
+  const matchProbs = computeProbs('m');
+  const t1Probs = computeProbs('t1');
+  const t2Probs = computeProbs('t2');
+
+  if(matchProbs.length === 0){
+    alert("Renseigne au moins une côte dans « Total du match » avant de calculer.");
+    return;
+  }
+
+  const expMatch = expectedTotal(matchProbs);
+  const expT1 = expectedTotal(t1Probs);
+  const expT2 = expectedTotal(t2Probs);
+  const sumTeams = (expT1 !== null && expT2 !== null) ? +(expT1 + expT2).toFixed(2) : null;
+  const ecart = (sumTeams !== null) ? +Math.abs(sumTeams - expMatch).toFixed(2) : null;
+  const concordance = ecart !== null ? (ecart <= 0.5) : null;
+
+  const signal = bestSignal(matchProbs);
+  const displayProb = Math.round((signal.prob >= 50 ? signal.prob : 100 - signal.prob) * 10) / 10;
+  const direction = signal.prob >= 50 ? 'Plus de' : 'Moins de';
+  const info = classify(displayProb);
+  const pronosticTxt = `${direction} ${fmt(signal.line)} buts`;
+
+  renderResult({expMatch, expT1, expT2, sumTeams, ecart, concordance, pronosticTxt, displayProb, info});
+
+  saveHistory({
+    champ: document.getElementById('champ').value || '—',
+    heure: document.getElementById('heure').value || '—',
+    pronostic: pronosticTxt,
+    prob: displayProb,
+    concordance
+  });
+});
+
+function renderResult(r){
+  const panel = document.getElementById('resultPanel');
+  panel.style.display = 'block';
+
+  let concordHtml = '';
+  if(r.sumTeams !== null){
+    concordHtml = `
+      <div class="stat-line"><span>Total attendu — équipe 1</span><b>${r.expT1}</b></div>
+      <div class="stat-line"><span>Total attendu — équipe 2</span><b>${r.expT2}</b></div>
+      <div class="stat-line"><span>Somme équipe 1 + équipe 2</span><b>${r.sumTeams}</b></div>
+      <div class="stat-line"><span>Écart avec le total du match</span><b>${r.ecart}</b></div>
+    `;
+  }
+
+  const concordNote = r.concordance === null
+    ? "Renseigne aussi les totaux des deux équipes pour activer la comparaison croisée."
+    : r.concordance
+      ? `<b>Concordance confirmée</b> — le total du match et la somme des deux équipes pointent vers la même zone de score. Confiance renforcée.`
+      : `<b>Divergence détectée</b> — le total du match et la somme des deux équipes ne s'accordent pas (écart de ${r.ecart} but). Pronostic à prendre avec prudence.`;
+
+  panel.innerHTML = `
+    <h3>Résultat de l'analyse</h3>
+    <div class="stat-line"><span>Total attendu — match</span><b>${r.expMatch}</b></div>
+    ${concordHtml}
+    <div class="pronostic-box">
+      <div class="p-label">${r.pronosticTxt}</div>
+      <div class="p-tag ${r.info.cls}">${r.info.label} — ${r.displayProb}%</div>
+    </div>
+    <div class="concord-note">${concordNote}</div>
+  `;
+}
+
+/* ---------- history ---------- */
+function loadHistory(){
+  try{ return JSON.parse(localStorage.getItem(HIST_KEY)) || []; }catch(e){ return []; }
+}
+function saveHistory(entry){
+  const list = loadHistory();
+  entry.date = new Date().toLocaleString('fr-FR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+  list.unshift(entry);
+  if(list.length > 30) list.length = 30;
+  localStorage.setItem(HIST_KEY, JSON.stringify(list));
+  renderHistory();
+}
+function renderHistory(){
+  const list = loadHistory();
+  const el = document.getElementById('histList');
+  document.getElementById('histCount').textContent = `(${list.length})`;
+  if(list.length === 0){
+    el.innerHTML = `<div class="hist-empty">Aucun calcul enregistré pour l'instant.</div>`;
+    return;
+  }
+  el.innerHTML = list.map(h=>`
+    <div class="hist-item">
+      <div class="hi-left"><b>${h.champ}</b>${h.date} · ${h.heure}</div>
+      <div class="hi-right">${h.pronostic}<br>${h.prob}%${h.concordance===true?' ✓':h.concordance===false?' ⚠':''}</div>
+    </div>
+  `).join('');
+}
+document.getElementById('clearHistBtn').addEventListener('click', ()=>{
+  if(confirm("Vider tout l'historique ?")){
+    localStorage.removeItem(HIST_KEY);
+    renderHistory();
+  }
+});
+renderHistory();
+
+/* ---------- reset / test ---------- */
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  localStorage.removeItem(INPUT_KEY);
+  document.querySelectorAll('input[type=number]').forEach(i=>i.value='');
+  document.getElementById('champ').value='';
+  document.getElementById('heure').value='';
+  document.getElementById('resultPanel').style.display='none';
+});
+
+document.getElementById('fillBtn').addEventListener('click', ()=>{
+  const m = {0.5:['1.05','8.50'],1.5:['1.45','2.70'],2.5:['2.35','1.55'],3.5:['4.20','1.18']};
+  const t1 = {0.5:['1.35','3.10'],1.5:['2.60','1.48']};
+  const t2 = {0.5:['1.55','2.35'],1.5:['3.00','1.36']};
+  document.getElementById('champ').value = "FC 25 - Italy Championship";
+  document.getElementById('heure').value = "21:00";
+  Object.keys(m).forEach(l=>{ document.getElementById(`m-over-${l}`).value=m[l][0]; document.getElementById(`m-under-${l}`).value=m[l][1]; });
+  Object.keys(t1).forEach(l=>{ document.getElementById(`t1-over-${l}`).value=t1[l][0]; document.getElementById(`t1-under-${l}`).value=t1[l][1]; });
+  Object.keys(t2).forEach(l=>{ document.getElementById(`t2-over-${l}`).value=t2[l][0]; document.getElementById(`t2-under-${l}`).value=t2[l][1]; });
+  saveInputs();
+});
+</script>
+
+</body>
+</html>
